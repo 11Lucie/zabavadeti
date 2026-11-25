@@ -8,8 +8,9 @@
    liší jen velikostí a barvou akcentu (třídy .acc-pink, .acc-sun, .acc-blue,
    .acc-green, .acc-orange). Sytá hravá paleta: růžová, sluníčková,
    elektrická modrá, svěží zelená, oranžová – v obou motivech stejná.
-   Světlý motiv je klidný a vzdušný: bílé karty s jemným neutrálním obrysem
-   a měkkým stínem, barva jen jako akcent (ikona, šipka, tečka, proužek nahoře
+   Světlý motiv je klidný a vzdušný: bílé karty s jemným neutrálním obrysem,
+   výrazným měkkým stínem a jemným barevným nádechem v rohu (vše jako karta
+   Kontakt), barva jinak jen jako akcent (ikona, šipka, tečka, proužek nahoře
    karty, štítek sekce a zvýrazněné slovo). Tmavý motiv má karty tónované
    s obrysem v barvě (tokeny --face-*).
 
@@ -151,10 +152,12 @@
   --tint-hover-green: #ecf8f3;
   --tint-hover-orange: #fef3eb;
 
-  /* ---- barevné karty: dlaždice služeb, reference, štítky „pro koho“, karta
-          školek, O mně, Kontakt a Facebook. Ve světlém motivu bílá karta
-          s jemným neutrálním obrysem a měkkým neutrálním stínem – barva je jen
-          v ikoně, šipce, tečce a v proužku nahoře (--face-stripe). V tmavém
+  /* ---- barevné karty: dlaždice služeb, reference, karta školek, O mně,
+          Kontakt a Facebook (štítky „pro koho“ berou jen plochu a obrys,
+          bez nádechu a stínu). Ve světlém motivu bílá karta
+          s jemným neutrálním obrysem, měkkým neutrálním stínem (--face-drop)
+          a jemným nádechem vlastní barvy v rohu (--face-wash-*) – jinak je barva
+          jen v ikoně, šipce, tečce a v proužku nahoře (--face-stripe). V tmavém
           motivu tónovaná plocha, silnější obrys a záře v barvě karty. ---- */
   --face-pink: #ffffff;       /* plocha karty */
   --face-sun: #ffffff;
@@ -174,6 +177,20 @@
   --face-shade-orange: rgba(24, 32, 80, 0.2);
   --face-shade-fb: rgba(24, 32, 80, 0.2);
   --face-lift: rgba(24, 32, 80, 0.08);       /* měkký neutrální stín karty (v tmavém žádný) */
+  --face-drop: rgba(24, 32, 80, 0.2);        /* výrazný měkký stín pod kartou jako u Kontaktu (v tmavém žádný) */
+  /* barevný nádech v rohu karty (radiální přechod ve vlastní barvě karty,
+     jako u karty Kontakt); po najetí na dlaždici o stupeň silnější.
+     V tmavém motivu průhledný – tmavé karty jsou tónované celé. */
+  --face-wash-pink: rgba(240, 40, 138, 0.08);
+  --face-wash-sun: rgba(227, 168, 0, 0.1);
+  --face-wash-blue: rgba(47, 114, 240, 0.08);
+  --face-wash-green: rgba(18, 169, 107, 0.08);
+  --face-wash-orange: rgba(242, 104, 10, 0.08);
+  --face-wash-hover-pink: rgba(240, 40, 138, 0.14);
+  --face-wash-hover-sun: rgba(227, 168, 0, 0.17);
+  --face-wash-hover-blue: rgba(47, 114, 240, 0.14);
+  --face-wash-hover-green: rgba(18, 169, 107, 0.14);
+  --face-wash-hover-orange: rgba(242, 104, 10, 0.14);
   --face-bw: 1px;             /* tloušťka obrysu karty */
   --face-stripe: 4px;         /* barevný proužek nahoře karty */
   --face-ring: 1px;           /* zesílení obrysu dlaždice po najetí */
@@ -275,6 +292,17 @@
     --face-shade-orange: #ff7a1a;
     --face-shade-fb: #1877f2;
     --face-lift: rgba(0, 0, 0, 0);
+    --face-drop: rgba(0, 0, 0, 0);
+    --face-wash-pink: rgba(0, 0, 0, 0);
+    --face-wash-sun: rgba(0, 0, 0, 0);
+    --face-wash-blue: rgba(0, 0, 0, 0);
+    --face-wash-green: rgba(0, 0, 0, 0);
+    --face-wash-orange: rgba(0, 0, 0, 0);
+    --face-wash-hover-pink: rgba(0, 0, 0, 0);
+    --face-wash-hover-sun: rgba(0, 0, 0, 0);
+    --face-wash-hover-blue: rgba(0, 0, 0, 0);
+    --face-wash-hover-green: rgba(0, 0, 0, 0);
+    --face-wash-hover-orange: rgba(0, 0, 0, 0);
     --face-bw: 2px;
     --face-stripe: 0px;
     --face-ring: 2px;
@@ -358,6 +386,17 @@
   --face-shade-orange: #ff7a1a;
   --face-shade-fb: #1877f2;
   --face-lift: rgba(0, 0, 0, 0);
+  --face-drop: rgba(0, 0, 0, 0);
+  --face-wash-pink: rgba(0, 0, 0, 0);
+  --face-wash-sun: rgba(0, 0, 0, 0);
+  --face-wash-blue: rgba(0, 0, 0, 0);
+  --face-wash-green: rgba(0, 0, 0, 0);
+  --face-wash-orange: rgba(0, 0, 0, 0);
+  --face-wash-hover-pink: rgba(0, 0, 0, 0);
+  --face-wash-hover-sun: rgba(0, 0, 0, 0);
+  --face-wash-hover-blue: rgba(0, 0, 0, 0);
+  --face-wash-hover-green: rgba(0, 0, 0, 0);
+  --face-wash-hover-orange: rgba(0, 0, 0, 0);
   --face-bw: 2px;
   --face-stripe: 0px;
   --face-ring: 2px;
@@ -513,7 +552,8 @@ h3 {
    proužek karty, obrys po najetí), --acc-tint tónované pozadí, --acc-tint-hover
    tón dlaždice po najetí, --acc-glow záře, --acc-x druhý, kontrastní akcent pro
    detaily ikon a --acc-face / --acc-face-edge / --acc-shade plocha, klidový
-   obrys a stín barevné karty (ve světlém motivu bílá, neutrální). */
+   obrys a stín barevné karty (ve světlém motivu bílá, neutrální),
+   --acc-wash / --acc-wash-hover barevný nádech v rohu karty (jen světlý motiv). */
 .acc-pink {
   --acc: var(--pink);
   --acc-edge: var(--edge-pink);
@@ -523,6 +563,8 @@ h3 {
   --acc-face: var(--face-pink);
   --acc-face-edge: var(--face-edge-pink);
   --acc-shade: var(--face-shade-pink);
+  --acc-wash: var(--face-wash-pink);
+  --acc-wash-hover: var(--face-wash-hover-pink);
   --acc-x: var(--sun);
 }
 
@@ -535,6 +577,8 @@ h3 {
   --acc-face: var(--face-sun);
   --acc-face-edge: var(--face-edge-sun);
   --acc-shade: var(--face-shade-sun);
+  --acc-wash: var(--face-wash-sun);
+  --acc-wash-hover: var(--face-wash-hover-sun);
   --acc-x: var(--pink);
 }
 
@@ -547,6 +591,8 @@ h3 {
   --acc-face: var(--face-blue);
   --acc-face-edge: var(--face-edge-blue);
   --acc-shade: var(--face-shade-blue);
+  --acc-wash: var(--face-wash-blue);
+  --acc-wash-hover: var(--face-wash-hover-blue);
   --acc-x: var(--sun);
 }
 
@@ -559,6 +605,8 @@ h3 {
   --acc-face: var(--face-green);
   --acc-face-edge: var(--face-edge-green);
   --acc-shade: var(--face-shade-green);
+  --acc-wash: var(--face-wash-green);
+  --acc-wash-hover: var(--face-wash-hover-green);
   --acc-x: var(--pink);
 }
 
@@ -571,6 +619,8 @@ h3 {
   --acc-face: var(--face-orange);
   --acc-face-edge: var(--face-edge-orange);
   --acc-shade: var(--face-shade-orange);
+  --acc-wash: var(--face-wash-orange);
+  --acc-wash-hover: var(--face-wash-hover-orange);
   --acc-x: var(--blue);
 }
 
@@ -1256,7 +1306,8 @@ h3 {
   border: var(--face-bw) solid var(--acc-face-edge);
   border-radius: 20px;
   background: var(--acc-face);
-  box-shadow: 0 1px 2px var(--face-lift), 0 10px 24px -14px var(--face-lift);
+  background-image: radial-gradient(110% 90% at 100% 0%, var(--acc-wash), transparent 70%);
+  box-shadow: 0 1px 2px var(--face-lift), 0 18px 40px -22px var(--face-drop);
   color: var(--ink);
   font-size: 0.9375rem;
   font-weight: 600;
@@ -1503,9 +1554,13 @@ h3 {
   border-top-color: var(--acc-edge);
   border-radius: var(--radius);
   background: var(--acc-face);
+  /* nádech v rohu; velikost --wash-size (široká poslední dlaždice ji má pevnou,
+     aby zůstal jen v rohu jako u karty Kontakt a nerozlil se do pruhu) */
+  --wash-size: 110% 90%;
+  background-image: radial-gradient(var(--wash-size) at 100% 0%, var(--acc-wash), transparent 70%);
   color: var(--ink);
   text-decoration: none;
-  box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 12px 28px -16px var(--face-lift);
+  box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 24px 50px -26px var(--face-drop);
 }
 
 .service:hover {
@@ -1591,15 +1646,17 @@ h3 {
 }
 
 /* Zvýrazněná dlaždice: po najetí myší (jen zařízení s myší) a při fokusu
-   z klávesnice. Jemně: tón vlastní barvy (ve světlém motivu velmi světlý),
+   z klávesnice. Jemně: tón vlastní barvy (ve světlém motivu velmi světlý,
+   nádech v rohu o stupeň silnější a větší stín),
    obrys v barvě zesílený prstencem stínem (--face-ring, bez posunu obsahu),
    měkký stín a šipka vyplněná sytou barvou. Text je celý v barvě --ink (kontrast aspoň 7 : 1, hlídá test).
    Nadzvednutí o 2 px jen bez omezení pohybu (prefers-reduced-motion). */
 .service:focus-visible {
   border-color: var(--acc-edge);
-  background: var(--acc-tint-hover);
+  background-color: var(--acc-tint-hover);
+  background-image: radial-gradient(var(--wash-size) at 100% 0%, var(--acc-wash-hover), transparent 70%);
   color: var(--ink);
-  box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 0 0 var(--face-ring) var(--acc-edge), 0 18px 40px -22px var(--acc-shade);
+  box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 0 0 var(--face-ring) var(--acc-edge), 0 18px 40px -22px var(--acc-shade), 0 34px 64px -28px var(--face-drop);
 }
 
 .service:focus-visible p {
@@ -1615,9 +1672,10 @@ h3 {
 @media (hover: hover) {
   .service:hover {
     border-color: var(--acc-edge);
-    background: var(--acc-tint-hover);
+    background-color: var(--acc-tint-hover);
+    background-image: radial-gradient(var(--wash-size) at 100% 0%, var(--acc-wash-hover), transparent 70%);
     color: var(--ink);
-    box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 0 0 var(--face-ring) var(--acc-edge), 0 18px 40px -22px var(--acc-shade);
+    box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 0 0 var(--face-ring) var(--acc-edge), 0 18px 40px -22px var(--acc-shade), 0 34px 64px -28px var(--face-drop);
   }
 
   .service:hover p {
@@ -1819,6 +1877,10 @@ h3 {
   }
 }
 
+.svc-wide .service {
+  --wash-size: 34rem 14rem;
+}
+
 .svc-wide .service > .service-icon {
   margin-bottom: 0;
 }
@@ -1863,7 +1925,8 @@ h3 {
   border-top-color: var(--edge-pink);
   border-radius: var(--radius);
   background: var(--card);
-  box-shadow: inset 0 var(--face-stripe) 0 var(--edge-pink), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 26px 60px -40px var(--face-shade-pink);
+  background-image: radial-gradient(34rem 22rem at 100% 0%, var(--face-wash-pink), transparent 70%);
+  box-shadow: inset 0 var(--face-stripe) 0 var(--edge-pink), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 26px 60px -40px var(--face-shade-pink), 0 40px 90px -50px var(--face-drop);
 }
 
 .traits h3 {
@@ -1964,7 +2027,8 @@ h3 {
   border-top-color: var(--acc-edge);
   border-radius: var(--radius);
   background: var(--acc-face);
-  box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 26px 60px -36px var(--acc-shade);
+  background-image: radial-gradient(110% 90% at 100% 0%, var(--acc-wash), transparent 70%);
+  box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 26px 60px -36px var(--acc-shade), 0 24px 50px -30px var(--face-drop);
 }
 
 .ref-mark {
@@ -2371,6 +2435,7 @@ h3 {
   background-image:
     radial-gradient(30rem 20rem at 100% 0%, var(--glow-pink), transparent 70%),
     radial-gradient(28rem 20rem at 0% 100%, var(--glow-blue), transparent 70%);
+  box-shadow: 0 1px 2px var(--face-lift), 0 40px 90px -50px var(--face-drop);
   text-align: center;
 }
 
@@ -2421,7 +2486,8 @@ h3 {
   border: 1px solid var(--line);
   border-radius: var(--radius-lg);
   background: var(--card);
-  box-shadow: inset 0 1px 0 var(--card-hi);
+  background-image: radial-gradient(34rem 22rem at 100% 0%, var(--acc-wash), transparent 70%);
+  box-shadow: inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 40px 90px -50px var(--face-drop);
 }
 
 .legal-block {
