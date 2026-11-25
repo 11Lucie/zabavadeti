@@ -8,6 +8,10 @@
    liší jen velikostí a barvou akcentu (třídy .acc-pink, .acc-sun, .acc-blue,
    .acc-green, .acc-orange). Sytá hravá paleta: růžová, sluníčková,
    elektrická modrá, svěží zelená, oranžová – v obou motivech stejná.
+   Světlý motiv je klidný a vzdušný: bílé karty s jemným neutrálním obrysem
+   a měkkým stínem, barva jen jako akcent (ikona, šipka, tečka, proužek nahoře
+   karty, štítek sekce a zvýrazněné slovo). Tmavý motiv má karty tónované
+   s obrysem v barvě (tokeny --face-*).
 
    Každá sekce má svou barvu (render.mjs, SECTION_COLORS): Služby žlutá,
    O mně růžová, Reference modrá, Kontakt zelená. V barvě sekce je vyplněný
@@ -94,9 +98,9 @@
 
   /* ---- světlý motiv: stránka ---- */
   color-scheme: light;
-  --bg: #f6f7fd;              /* skoro bílá s nádechem modré */
-  --bg-band: #eceffa;         /* každá druhá sekce */
-  --bg-alt: #e3e7f6;          /* patička */
+  --bg: #ffffff;              /* čistě bílá */
+  --bg-band: #f7f8fc;         /* každá druhá sekce: jen velmi jemně odlišená */
+  --bg-alt: #eef1f8;          /* patička */
   --ink: #0b1026;             /* text */
   --muted: #434b6e;           /* vedlejší text */
   --brand: #b8145a;           /* odkazy a ikony v textu (malinová) */
@@ -132,27 +136,64 @@
   --edge-green: #12a96b;
   --edge-orange: #f2680a;
 
-  /* ---- tónované pozadí dlaždic, referencí a štítků ---- */
+  /* ---- tónované pozadí (položka mobilního menu po najetí, kresba bez fotky) ---- */
   --tint-pink: #ffe0ef;
   --tint-sun: #fff1bd;
   --tint-blue: #dde9ff;
   --tint-green: #d2f4e4;
   --tint-orange: #ffe3cc;
 
-  /* ---- o stupeň výraznější tón: dlaždice služeb po najetí / při fokusu ---- */
-  --tint-hover-pink: #ffcde4;
-  --tint-hover-sun: #ffeba3;
-  --tint-hover-blue: #c9dcff;
-  --tint-hover-green: #b5ecd2;
-  --tint-hover-orange: #ffd2ad;
+  /* ---- dlaždice služeb po najetí / při fokusu: ve světlém motivu jen velmi
+          světlý tón vlastní barvy (~8 % obrysové barvy na bílé) ---- */
+  --tint-hover-pink: #feeef6;
+  --tint-hover-sun: #fdf8eb;
+  --tint-hover-blue: #eef4fe;
+  --tint-hover-green: #ecf8f3;
+  --tint-hover-orange: #fef3eb;
 
-  /* ---- barevné záře v pozadí (dekorace) ---- */
-  --glow-pink: rgba(255, 61, 154, 0.16);
-  --glow-sun: rgba(255, 210, 63, 0.3);
-  --glow-blue: rgba(74, 140, 255, 0.18);
-  --glow-green: rgba(34, 201, 131, 0.2);
-  --glow-orange: rgba(255, 122, 26, 0.16);
-  --glow-fb: rgba(24, 119, 242, 0.16);
+  /* ---- barevné karty: dlaždice služeb, reference, štítky „pro koho“, karta
+          školek, O mně, Kontakt a Facebook. Ve světlém motivu bílá karta
+          s jemným neutrálním obrysem a měkkým neutrálním stínem – barva je jen
+          v ikoně, šipce, tečce a v proužku nahoře (--face-stripe). V tmavém
+          motivu tónovaná plocha, silnější obrys a záře v barvě karty. ---- */
+  --face-pink: #ffffff;       /* plocha karty */
+  --face-sun: #ffffff;
+  --face-blue: #ffffff;
+  --face-green: #ffffff;
+  --face-orange: #ffffff;
+  --face-edge-pink: #e5e8f2;  /* obrys karty v klidu (dekorace) */
+  --face-edge-sun: #e5e8f2;
+  --face-edge-blue: #e5e8f2;
+  --face-edge-green: #e5e8f2;
+  --face-edge-orange: #e5e8f2;
+  --face-edge-fb: #e5e8f2;
+  --face-shade-pink: rgba(24, 32, 80, 0.2);  /* stín pod kartou */
+  --face-shade-sun: rgba(24, 32, 80, 0.2);
+  --face-shade-blue: rgba(24, 32, 80, 0.2);
+  --face-shade-green: rgba(24, 32, 80, 0.2);
+  --face-shade-orange: rgba(24, 32, 80, 0.2);
+  --face-shade-fb: rgba(24, 32, 80, 0.2);
+  --face-lift: rgba(24, 32, 80, 0.08);       /* měkký neutrální stín karty (v tmavém žádný) */
+  --face-bw: 1px;             /* tloušťka obrysu karty */
+  --face-stripe: 4px;         /* barevný proužek nahoře karty */
+  --face-ring: 1px;           /* zesílení obrysu dlaždice po najetí */
+
+  /* ---- barevné záře v pozadí (dekorace; ve světlém motivu sotva znatelné) ---- */
+  --glow-pink: rgba(255, 61, 154, 0.06);
+  --glow-sun: rgba(255, 210, 63, 0.12);
+  --glow-blue: rgba(74, 140, 255, 0.07);
+  --glow-green: rgba(34, 201, 131, 0.07);
+  --glow-orange: rgba(255, 122, 26, 0.06);
+  --glow-fb: rgba(24, 119, 242, 0.07);
+  --fb-shot-ring: #e5e8f2;    /* tenký obrys miniatur fotek ve FB kartě (dekorace) */
+
+  /* ---- akcenty v nadpisech a za fotkami: ve světlém motivu tlumenější ----
+     Zvýrazněné slovo v nadpisu jen jako zvýrazňovač přes spodní část slova
+     (--hl-pos / --hl-size = poloha a velikost barevného pruhu), barevná plocha
+     za fotkou v úvodu a v O mně s nižší sytostí (--frame-opacity). */
+  --hl-pos: 0 84%;
+  --hl-size: 100% 46%;
+  --frame-opacity: 0.42;
 
   /* ---- tlačítka ---- */
   --btn-bg: #c2165a;          /* hlavní: malinová, bílý tučný text */
@@ -216,12 +257,37 @@
     --tint-hover-blue: #1c3675;
     --tint-hover-green: #124a43;
     --tint-hover-orange: #5a2e1d;
+    --face-pink: #47173f;
+    --face-sun: #3a3216;
+    --face-blue: #15295c;
+    --face-green: #0e3934;
+    --face-orange: #452418;
+    --face-edge-pink: #ff3d9a;
+    --face-edge-sun: #ffd23f;
+    --face-edge-blue: #4a8cff;
+    --face-edge-green: #22c983;
+    --face-edge-orange: #ff7a1a;
+    --face-edge-fb: #1877f2;
+    --face-shade-pink: #ff3d9a;
+    --face-shade-sun: #ffd23f;
+    --face-shade-blue: #4a8cff;
+    --face-shade-green: #22c983;
+    --face-shade-orange: #ff7a1a;
+    --face-shade-fb: #1877f2;
+    --face-lift: rgba(0, 0, 0, 0);
+    --face-bw: 2px;
+    --face-stripe: 0px;
+    --face-ring: 2px;
     --glow-pink: rgba(255, 61, 154, 0.3);
     --glow-sun: rgba(255, 210, 63, 0.15);
     --glow-blue: rgba(74, 140, 255, 0.32);
     --glow-green: rgba(34, 201, 131, 0.24);
     --glow-orange: rgba(255, 122, 26, 0.22);
     --glow-fb: rgba(24, 119, 242, 0.3);
+    --fb-shot-ring: rgba(24, 119, 242, 0.3);
+    --hl-pos: 0 72%;
+    --hl-size: 100% 76%;
+    --frame-opacity: 1;
     --btn-bg: #c2165a;
     --btn-bg-hover: #a9124e;
     --btn-ink: #ffffff;
@@ -274,12 +340,37 @@
   --tint-hover-blue: #1c3675;
   --tint-hover-green: #124a43;
   --tint-hover-orange: #5a2e1d;
+  --face-pink: #47173f;
+  --face-sun: #3a3216;
+  --face-blue: #15295c;
+  --face-green: #0e3934;
+  --face-orange: #452418;
+  --face-edge-pink: #ff3d9a;
+  --face-edge-sun: #ffd23f;
+  --face-edge-blue: #4a8cff;
+  --face-edge-green: #22c983;
+  --face-edge-orange: #ff7a1a;
+  --face-edge-fb: #1877f2;
+  --face-shade-pink: #ff3d9a;
+  --face-shade-sun: #ffd23f;
+  --face-shade-blue: #4a8cff;
+  --face-shade-green: #22c983;
+  --face-shade-orange: #ff7a1a;
+  --face-shade-fb: #1877f2;
+  --face-lift: rgba(0, 0, 0, 0);
+  --face-bw: 2px;
+  --face-stripe: 0px;
+  --face-ring: 2px;
   --glow-pink: rgba(255, 61, 154, 0.3);
   --glow-sun: rgba(255, 210, 63, 0.15);
   --glow-blue: rgba(74, 140, 255, 0.32);
   --glow-green: rgba(34, 201, 131, 0.24);
   --glow-orange: rgba(255, 122, 26, 0.22);
   --glow-fb: rgba(24, 119, 242, 0.3);
+  --fb-shot-ring: rgba(24, 119, 242, 0.3);
+  --hl-pos: 0 72%;
+  --hl-size: 100% 76%;
+  --frame-opacity: 1;
   --btn-bg: #c2165a;
   --btn-bg-hover: #a9124e;
   --btn-ink: #ffffff;
@@ -418,15 +509,20 @@ h3 {
 }
 
 /* Barva akcentu prvku (dlaždice, štítky, reference, sekce, položky menu).
-   --acc je sytá barva (výplň), --acc-edge obrys, --acc-tint tónované pozadí,
-   --acc-tint-hover o stupeň výraznější tón (dlaždice po najetí), --acc-glow záře
-   a --acc-x druhý, kontrastní akcent pro detaily ikon. */
+   --acc je sytá barva (výplň), --acc-edge obrys v barvě (šipka, uvozovka,
+   proužek karty, obrys po najetí), --acc-tint tónované pozadí, --acc-tint-hover
+   tón dlaždice po najetí, --acc-glow záře, --acc-x druhý, kontrastní akcent pro
+   detaily ikon a --acc-face / --acc-face-edge / --acc-shade plocha, klidový
+   obrys a stín barevné karty (ve světlém motivu bílá, neutrální). */
 .acc-pink {
   --acc: var(--pink);
   --acc-edge: var(--edge-pink);
   --acc-tint: var(--tint-pink);
   --acc-tint-hover: var(--tint-hover-pink);
   --acc-glow: var(--glow-pink);
+  --acc-face: var(--face-pink);
+  --acc-face-edge: var(--face-edge-pink);
+  --acc-shade: var(--face-shade-pink);
   --acc-x: var(--sun);
 }
 
@@ -436,6 +532,9 @@ h3 {
   --acc-tint: var(--tint-sun);
   --acc-tint-hover: var(--tint-hover-sun);
   --acc-glow: var(--glow-sun);
+  --acc-face: var(--face-sun);
+  --acc-face-edge: var(--face-edge-sun);
+  --acc-shade: var(--face-shade-sun);
   --acc-x: var(--pink);
 }
 
@@ -445,6 +544,9 @@ h3 {
   --acc-tint: var(--tint-blue);
   --acc-tint-hover: var(--tint-hover-blue);
   --acc-glow: var(--glow-blue);
+  --acc-face: var(--face-blue);
+  --acc-face-edge: var(--face-edge-blue);
+  --acc-shade: var(--face-shade-blue);
   --acc-x: var(--sun);
 }
 
@@ -454,6 +556,9 @@ h3 {
   --acc-tint: var(--tint-green);
   --acc-tint-hover: var(--tint-hover-green);
   --acc-glow: var(--glow-green);
+  --acc-face: var(--face-green);
+  --acc-face-edge: var(--face-edge-green);
+  --acc-shade: var(--face-shade-green);
   --acc-x: var(--pink);
 }
 
@@ -463,16 +568,20 @@ h3 {
   --acc-tint: var(--tint-orange);
   --acc-tint-hover: var(--tint-hover-orange);
   --acc-glow: var(--glow-orange);
+  --acc-face: var(--face-orange);
+  --acc-face-edge: var(--face-edge-orange);
+  --acc-shade: var(--face-shade-orange);
   --acc-x: var(--blue);
 }
 
 /* Zvýrazňovací obdélník za slovem nadpisu (jako fixa). Kreslí se přechodem
-   jen přes střední část řádku – zaoblené písmo má vysoké okraje řádku a celé
-   pozadí by bylo příliš vysoké. */
+   jen přes část řádku – zaoblené písmo má vysoké okraje řádku a celé
+   pozadí by bylo příliš vysoké. V tmavém motivu přes celé slovo, ve světlém
+   jen přes jeho spodní část jako zvýrazňovač (tokeny --hl-pos, --hl-size). */
 .hl {
   padding: 0 0.16em;
   border-radius: 0.2em;
-  background: linear-gradient(var(--hl), var(--hl)) 0 72% / 100% 76% no-repeat;
+  background: linear-gradient(var(--hl), var(--hl)) var(--hl-pos) / var(--hl-size) no-repeat;
   color: var(--on-accent);
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
@@ -525,7 +634,7 @@ h3 {
   background: var(--acc);
   color: var(--on-accent);
   font-size: 1rem;
-  box-shadow: 0 14px 34px -16px var(--acc);
+  box-shadow: 0 14px 34px -16px var(--acc-shade);
 }
 
 .section-title .kicker::before {
@@ -1115,9 +1224,9 @@ h3 {
   gap: 8px;
   min-height: 40px;
   padding: 8px 16px 8px 12px;
-  border: 1px solid var(--acc-edge);
+  border: 1px solid var(--acc-face-edge);
   border-radius: 999px;
-  background: var(--acc-tint);
+  background: var(--acc-face);
   color: var(--ink);
   font-size: 0.9375rem;
   font-weight: 700;
@@ -1134,8 +1243,9 @@ h3 {
 }
 
 /* Mateřské školy: malá karta v oranžové (barvu nepoužívá žádný štítek nad ní):
-   oranžový obrys, oranžově tónované pozadí a ikona školky na oranžové
-   dlaždici vlevo, ikona i text svisle na středu. */
+   ikona školky na oranžové dlaždici vlevo, ikona i text svisle na středu.
+   Ve světlém motivu bílá karta s jemným obrysem, v tmavém oranžově tónovaná
+   s oranžovým obrysem. */
 .hero-note {
   display: flex;
   gap: 14px;
@@ -1143,9 +1253,10 @@ h3 {
   contain: inline-size;
   margin: 0;
   padding: 12px 18px 12px 12px;
-  border: 2px solid var(--acc-edge);
+  border: var(--face-bw) solid var(--acc-face-edge);
   border-radius: 20px;
-  background: var(--acc-tint);
+  background: var(--acc-face);
+  box-shadow: 0 1px 2px var(--face-lift), 0 10px 24px -14px var(--face-lift);
   color: var(--ink);
   font-size: 0.9375rem;
   font-weight: 600;
@@ -1185,6 +1296,7 @@ h3 {
   inset: 26px -14px -14px 26px;
   border-radius: var(--radius-lg);
   background: linear-gradient(135deg, var(--pink), var(--orange) 55%, var(--sun));
+  opacity: var(--frame-opacity);
 }
 
 .hero-frame::after {
@@ -1357,10 +1469,14 @@ h3 {
 }
 
 /* ---- služby: bento mřížka barevných dlaždic ----
-   Dlaždice má vždy tónované pozadí a obrys v barvě své ikony. Celá dlaždice
-   je odkaz na Kontakt; po najetí myší nebo při fokusu jemně zesílí (o stupeň
-   výraznější tón, silnější obrys, nadzvednutí) – nevyplní se celou sytou
-   barvou (na dotykových zařízeních zůstává klidový obrys a tón). */
+   Ve světlém motivu je dlaždice bílá karta s jemným neutrálním obrysem,
+   měkkým stínem a proužkem v barvě své ikony nahoře (barva jen v ikoně, šipce
+   a proužku); v tmavém motivu má tónované pozadí a obrys v barvě ikony.
+   Celá dlaždice je odkaz na Kontakt; po najetí myší nebo při fokusu jemně
+   zesílí (světlý tón vlastní barvy, obrys v barvě, nadzvednutí) – nevyplní se
+   celou sytou barvou (na dotykových zařízeních zůstává klidový vzhled).
+   Proužek nahoře je vnitřní stín (inset) + horní obrys v barvě, takže kopíruje
+   zaoblení rohů; v tmavém motivu má nulovou výšku. */
 
 .services {
   display: grid;
@@ -1383,12 +1499,13 @@ h3 {
   align-items: flex-start;
   width: 100%;
   padding: 16px;
-  border: 2px solid var(--acc-edge);
+  border: var(--face-bw) solid var(--acc-face-edge);
+  border-top-color: var(--acc-edge);
   border-radius: var(--radius);
-  background: var(--acc-tint);
+  background: var(--acc-face);
   color: var(--ink);
   text-decoration: none;
-  box-shadow: inset 0 1px 0 var(--card-hi);
+  box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 12px 28px -16px var(--face-lift);
 }
 
 .service:hover {
@@ -1474,15 +1591,15 @@ h3 {
 }
 
 /* Zvýrazněná dlaždice: po najetí myší (jen zařízení s myší) a při fokusu
-   z klávesnice. Jemně: o stupeň výraznější tón vlastní barvy, zesílený obrys
-   (obrys + prstenec stínem, bez posunu obsahu), stín v barvě a šipka vyplněná
-   sytou barvou. Text je celý v barvě --ink (kontrast aspoň 7 : 1, hlídá test).
+   z klávesnice. Jemně: tón vlastní barvy (ve světlém motivu velmi světlý),
+   obrys v barvě zesílený prstencem stínem (--face-ring, bez posunu obsahu),
+   měkký stín a šipka vyplněná sytou barvou. Text je celý v barvě --ink (kontrast aspoň 7 : 1, hlídá test).
    Nadzvednutí o 2 px jen bez omezení pohybu (prefers-reduced-motion). */
 .service:focus-visible {
   border-color: var(--acc-edge);
   background: var(--acc-tint-hover);
   color: var(--ink);
-  box-shadow: inset 0 1px 0 var(--card-hi), 0 0 0 2px var(--acc-edge), 0 18px 40px -22px var(--acc);
+  box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 0 0 var(--face-ring) var(--acc-edge), 0 18px 40px -22px var(--acc-shade);
 }
 
 .service:focus-visible p {
@@ -1500,7 +1617,7 @@ h3 {
     border-color: var(--acc-edge);
     background: var(--acc-tint-hover);
     color: var(--ink);
-    box-shadow: inset 0 1px 0 var(--card-hi), 0 0 0 2px var(--acc-edge), 0 18px 40px -22px var(--acc);
+    box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 0 0 var(--face-ring) var(--acc-edge), 0 18px 40px -22px var(--acc-shade);
   }
 
   .service:hover p {
@@ -1742,10 +1859,11 @@ h3 {
   max-width: 40em;
   margin-top: var(--space-l);
   padding: 24px;
-  border: 2px solid var(--edge-pink);
+  border: var(--face-bw) solid var(--face-edge-pink);
+  border-top-color: var(--edge-pink);
   border-radius: var(--radius);
   background: var(--card);
-  box-shadow: inset 0 1px 0 var(--card-hi), 0 26px 60px -40px var(--pink);
+  box-shadow: inset 0 var(--face-stripe) 0 var(--edge-pink), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 26px 60px -40px var(--face-shade-pink);
 }
 
 .traits h3 {
@@ -1819,7 +1937,9 @@ h3 {
   }
 }
 
-/* ---- reference: každá karta ve své barvě (obrys + tónované pozadí) ---- */
+/* ---- reference: každá karta ve své barvě – ve světlém motivu bílá karta
+   s proužkem nahoře, barevnou uvozovkou a iniciálou, v tmavém tónované pozadí
+   a obrys v barvě (jako dlaždice služeb) ---- */
 
 .refs {
   display: grid;
@@ -1840,10 +1960,11 @@ h3 {
   width: 100%;
   margin: 0;
   padding: 28px;
-  border: 2px solid var(--acc-edge);
+  border: var(--face-bw) solid var(--acc-face-edge);
+  border-top-color: var(--acc-edge);
   border-radius: var(--radius);
-  background: var(--acc-tint);
-  box-shadow: inset 0 1px 0 var(--card-hi), 0 26px 60px -36px var(--acc);
+  background: var(--acc-face);
+  box-shadow: inset 0 var(--face-stripe) 0 var(--acc-edge), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 26px 60px -36px var(--acc-shade);
 }
 
 .ref-mark {
@@ -1933,11 +2054,12 @@ h3 {
 
 .contact-card {
   padding: 36px 20px 28px;
-  border: 2px solid var(--edge-green);
+  border: var(--face-bw) solid var(--face-edge-green);
+  border-top-color: var(--edge-green);
   background-image:
     radial-gradient(34rem 22rem at 100% 0%, var(--glow-green), transparent 70%),
     radial-gradient(30rem 20rem at 0% 100%, var(--glow-blue), transparent 70%);
-  box-shadow: inset 0 1px 0 var(--card-hi), 0 40px 90px -50px var(--green);
+  box-shadow: inset 0 var(--face-stripe) 0 var(--edge-green), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 40px 90px -50px var(--face-shade-green);
 }
 
 .contact-card::after {
@@ -2033,9 +2155,10 @@ h3 {
   align-items: flex-start;
   justify-content: flex-start;
   padding: 28px 22px;
-  border: 2px solid var(--fb-blue);
+  border: var(--face-bw) solid var(--face-edge-fb);
+  border-top-color: var(--fb-blue);
   background-image: radial-gradient(28rem 22rem at 100% 0%, var(--glow-fb), transparent 70%);
-  box-shadow: inset 0 1px 0 var(--card-hi), 0 40px 90px -50px var(--fb-blue);
+  box-shadow: inset 0 var(--face-stripe) 0 var(--fb-blue), inset 0 1px 0 var(--card-hi), 0 1px 2px var(--face-lift), 0 40px 90px -50px var(--face-shade-fb);
   color: var(--ink);
   text-decoration: none;
 }
@@ -2124,7 +2247,7 @@ h3 {
   border: 4px solid var(--card);
   border-radius: 18px;
   background: var(--card);
-  box-shadow: 0 14px 28px -14px var(--shadow-color), 0 0 0 1px var(--glow-fb);
+  box-shadow: 0 14px 28px -14px var(--shadow-color), 0 0 0 1px var(--fb-shot-ring);
   transform: rotate(-6deg);
 }
 

@@ -161,6 +161,7 @@ describe('CSS motivy (světlý / tmavý)', () => {
   const ACCENTS = ['--pink', '--sun', '--blue', '--green', '--orange'];
   const TINTS = ['--tint-pink', '--tint-sun', '--tint-blue', '--tint-green', '--tint-orange'];
   const HOVER_TINTS = TINTS.map((t) => t.replace('--tint-', '--tint-hover-'));
+  const FACES = TINTS.map((t) => t.replace('--tint-', '--face-'));
   // Barevné plochy s textem (tlačítka, vyplněné štítky sekcí, zvýraznění, vyplněné dlaždice
   // služeb, dlaždice 404) mají být čitelné na první pohled: cíl majitelky 5,5 : 1, ne hraničních 4,5.
   const SOLID = 5.5;
@@ -173,9 +174,11 @@ describe('CSS motivy (světlý / tmavý)', () => {
     ]),
     ['--logo-sub', '--bg', 4.5, '„Měřín a okolí“ pod logem'], ['--logo-sub', '--bg-alt', 4.5, '„Měřín a okolí“ v patičce'],
     ['--bg', '--ink', 4.5, 'odkaz Přeskočit na obsah, ikona v obrysovém tlačítku'],
-    // tónované dlaždice služeb, karty referencí (dlouhý text: doporučeno 7 : 1), štítky „pro koho“
-    // a karta mateřských škol
-    ...TINTS.flatMap((bg) => [['--ink', bg, 7, 'text na tónované kartě'], ['--muted', bg, 4.5, 'popis služby, autor reference']]),
+    // plochy barevných karet: dlaždice služeb, karty referencí (dlouhý text: doporučeno 7 : 1),
+    // štítky „pro koho“ a karta mateřských škol (světlý motiv bílé, tmavý tónované)
+    ...FACES.flatMap((bg) => [['--ink', bg, 7, 'text na kartě'], ['--muted', bg, 4.5, 'popis služby, autor reference']]),
+    // tónované pozadí: položka mobilního menu po najetí, kresba bez fotky
+    ...TINTS.flatMap((bg) => [['--ink', bg, 7, 'text na tónovaném pozadí'], ['--muted', bg, 4.5, 'vedlejší text na tónovaném pozadí']]),
     // dlaždice služeb po najetí / při fokusu: o stupeň výraznější tón, všechen text --ink (7 : 1)
     ...HOVER_TINTS.map((bg) => ['--ink', bg, 7, 'text dlaždice služby po najetí']),
     // samolepka se sloganem v úvodu: tmavě modrý text na sluníčkově žluté
@@ -252,20 +255,23 @@ describe('CSS motivy (světlý / tmavý)', () => {
     assert.equal(at('.hero-note', 'contain'), 'inline-size', 'karta se nepočítá do šířky bloku, jen ho vyplní');
     assert.equal(at('.hero-note', 'margin'), '0');
     assert.equal(at('.hero-note', 'align-items'), 'center');
-    assert.equal(at('.hero-note', 'background'), 'var(--acc-tint)');
+    assert.equal(at('.hero-note', 'background'), 'var(--acc-face)', 've světlém motivu bílá, v tmavém tónovaná');
+    assert.equal(at('.hero-note', 'border'), 'var(--face-bw) solid var(--acc-face-edge)');
     assert.equal(at('.hero-note', 'color'), 'var(--ink)');
   });
 
   test('dlaždice služeb: obrys v barvě vždy, po najetí (jen myš) a při fokusu jemně zesílí, bez pohybu při omezení pohybu', () => {
     const at = (sel, prop, media = null) => decls.find((d) => d.path.at(-1) === sel && d.prop === prop && (media === null ? d.path.length === 1 : d.path[0] === media));
-    assert.equal(at('.service', 'border')?.value, '2px solid var(--acc-edge)');
-    assert.equal(at('.service', 'background')?.value, 'var(--acc-tint)');
+    assert.equal(at('.service', 'border')?.value, 'var(--face-bw) solid var(--acc-face-edge)');
+    assert.equal(at('.service', 'border-top-color')?.value, 'var(--acc-edge)', 'proužek nahoře v barvě');
+    assert.equal(at('.service', 'background')?.value, 'var(--acc-face)');
     for (const [sel, media] of [['.service:focus-visible', null], ['.service:hover', '@media (hover: hover)']]) {
-      // o stupeň výraznější tón vlastní barvy (ne celá sytá barva), text --ink (7 : 1 hlídá test kontrastů)
+      // tón vlastní barvy (ve světlém motivu velmi světlý, ne celá sytá barva), text --ink (7 : 1 hlídá test kontrastů)
       assert.equal(at(sel, 'background', media)?.value, 'var(--acc-tint-hover)', sel);
       assert.equal(at(sel, 'color', media)?.value, 'var(--ink)', sel);
       assert.equal(at(`${sel} p`, 'color', media)?.value, 'var(--ink)', `${sel} p`);
-      assert.match(at(sel, 'box-shadow', media)?.value ?? '', /0 0 0 2px var\(--acc-edge\)/, `${sel}: zesílený obrys`);
+      assert.equal(at(sel, 'border-color', media)?.value, 'var(--acc-edge)', `${sel}: obrys v barvě`);
+      assert.match(at(sel, 'box-shadow', media)?.value ?? '', /0 0 0 var\(--face-ring\) var\(--acc-edge\)/, `${sel}: zesílený obrys`);
     }
     // Nadzvednutí jen bez omezení pohybu.
     for (const d of decls.filter((x) => x.prop === 'transform' && /^\.service:(hover|focus-visible)$/.test(x.path.at(-1)))) {
@@ -282,8 +288,8 @@ describe('CSS motivy (světlý / tmavý)', () => {
     const at = (sel, prop) => decls.find((d) => d.path.length === 1 && d.path[0] === sel && d.prop === prop)?.value;
     assert.equal(at('.section-title .kicker', 'background'), 'var(--acc)');
     assert.equal(at('.section-title .kicker', 'color'), 'var(--on-accent)');
-    assert.equal(at('.ref', 'background'), 'var(--acc-tint)');
-    assert.equal(at('.ref', 'border'), '2px solid var(--acc-edge)');
+    assert.equal(at('.ref', 'background'), 'var(--acc-face)');
+    assert.equal(at('.ref', 'border'), 'var(--face-bw) solid var(--acc-face-edge)');
     // Délka řádku v em (ch je u Plus Jakarta Sans úzká nula -> řádky by měly přes 90 znaků).
     for (const sel of ['.legal-block', '.about-text > p', '.lead', '.section-intro', '.refs-note']) {
       const m = /^(\d+(?:\.\d+)?)em$/.exec(at(sel, 'max-width') ?? '');
@@ -292,13 +298,118 @@ describe('CSS motivy (světlý / tmavý)', () => {
     assert.ok(!/max-width:\s*\d+ch/.test(css), 'žádné max-width v ch');
   });
 
+  // Schválený tmavý motiv (stav před zklidněním světlého motivu). Tmavý vzhled se nemá měnit:
+  // změna tmavé barvy musí být vědomá (upravit i tento seznam).
+  const DARK_APPROVED = {
+    'color-scheme': 'dark', '--bg': '#0b1026', '--bg-band': '#10173a', '--bg-alt': '#070b1c', '--ink': '#f3f5ff',
+    '--muted': '#b3bbdf', '--brand': '#ff70b6', '--brand-strong': '#ffa3cf', '--focus': '#ffd23f',
+    '--card': '#161e46', '--line': '#2a3563', '--line-strong': '#3b4880',
+    '--card-hi': 'rgba(255, 255, 255, 0.07)', '--shadow-color': 'rgba(0, 0, 0, 0.55)',
+    '--header-bg': 'rgba(11, 16, 38, 0.96)', '--header-shadow': 'rgba(0, 0, 0, 0.6)',
+    '--control-line': '#6672a8', '--logo-sub': '#ffd23f', '--pink': '#ff3d9a', '--sun': '#ffd23f',
+    '--blue': '#4a8cff', '--green': '#22c983', '--orange': '#ff7a1a', '--on-accent': '#0b1026',
+    '--ico-w': '#ffffff', '--edge-pink': '#ff3d9a', '--edge-sun': '#ffd23f', '--edge-blue': '#4a8cff',
+    '--edge-green': '#22c983', '--edge-orange': '#ff7a1a', '--tint-pink': '#47173f', '--tint-sun': '#3a3216',
+    '--tint-blue': '#15295c', '--tint-green': '#0e3934', '--tint-orange': '#452418',
+    '--tint-hover-pink': '#5c1d52', '--tint-hover-sun': '#4d4219', '--tint-hover-blue': '#1c3675',
+    '--tint-hover-green': '#124a43', '--tint-hover-orange': '#5a2e1d', '--glow-pink': 'rgba(255, 61, 154, 0.3)',
+    '--glow-sun': 'rgba(255, 210, 63, 0.15)', '--glow-blue': 'rgba(74, 140, 255, 0.32)',
+    '--glow-green': 'rgba(34, 201, 131, 0.24)', '--glow-orange': 'rgba(255, 122, 26, 0.22)',
+    '--glow-fb': 'rgba(24, 119, 242, 0.3)', '--btn-bg': '#c2165a', '--btn-bg-hover': '#a9124e',
+    '--btn-ink': '#ffffff', '--btn2-line': '#dfe3fb', '--btn2-bg-hover': '#1f2958', '--fb-blue': '#1877f2',
+    '--fb-btn': '#1463d1', '--fb-ink': '#ffffff',
+  };
+
+  test('tmavý motiv se nezměnil: schválené barvy a karty kreslené novými tokeny vypadají stejně', () => {
+    const [, [, dark]] = themes();
+    for (const [name, value] of Object.entries(DARK_APPROVED)) assert.equal(dark.get(name), value, `tmavý ${name}`);
+    // Nové tokeny karet mají v tmavém motivu přesně dřívější hodnoty: plocha = tón, obrys = barva
+    // obrysu, stín = sytá barva (Kontakt zelená, Facebook modrá) …
+    for (const a of ACCENTS.map((n) => n.slice(2))) {
+      assert.equal(dark.get(`--face-${a}`), DARK_APPROVED[`--tint-${a}`], `--face-${a}`);
+      assert.equal(dark.get(`--face-edge-${a}`), DARK_APPROVED[`--edge-${a}`], `--face-edge-${a}`);
+      assert.equal(dark.get(`--face-shade-${a}`), DARK_APPROVED[`--${a}`], `--face-shade-${a}`);
+    }
+    assert.equal(dark.get('--face-edge-fb'), DARK_APPROVED['--fb-blue']);
+    assert.equal(dark.get('--face-shade-fb'), DARK_APPROVED['--fb-blue']);
+    // … obrys 2 px, prstenec po najetí 2 px, bez proužku nahoře a bez neutrálního stínu.
+    assert.equal(dark.get('--face-bw'), '2px');
+    assert.equal(dark.get('--face-ring'), '2px');
+    assert.equal(dark.get('--face-stripe'), '0px');
+    assert.equal(dark.get('--face-lift'), 'rgba(0, 0, 0, 0)');
+    // Tokeny, které rozdělily dřívější společnou hodnotu (aby šel světlý motiv zklidnit zvlášť),
+    // mají v tmavém motivu přesně dřívější vzhled: obrys miniatur FB = dřívější --glow-fb,
+    // zvýraznění slova přes celé slovo (dřívější 0 72% / 100% 76%), přechod za fotkou plně sytý.
+    const SPLIT = { '--fb-shot-ring': DARK_APPROVED['--glow-fb'], '--hl-pos': '0 72%', '--hl-size': '100% 76%', '--frame-opacity': '1' };
+    for (const [name, value] of Object.entries(SPLIT)) assert.equal(dark.get(name), value, `tmavý ${name}`);
+    // Jiné nové tmavé tokeny než tokeny karet a výše vyjmenované nepřibyly.
+    const added = [...dark.keys()].filter((n) => !(n in DARK_APPROVED) && !(n in SPLIT));
+    assert.deepEqual(added.filter((n) => !n.startsWith('--face-')), []);
+  });
+
+  test('světlý motiv je klidný: bílé karty s jemným obrysem, barva jen jako akcent', () => {
+    const [[, light]] = themes();
+    const alpha = (v) => Number(/^rgba\(.*, ([\d.]+)\)$/.exec(v ?? '')?.[1]);
+    assert.equal(light.get('--bg'), '#ffffff');
+    assert.equal(light.get('--card'), '#ffffff');
+    assert.ok(ratio(light.get('--bg-band'), '#ffffff') < 1.08, 'střídání sekcí jen velmi jemné');
+    for (const a of ACCENTS.map((n) => n.slice(2))) {
+      assert.equal(light.get(`--face-${a}`), '#ffffff', `--face-${a}: bílá karta, žádná pastelová výplň`);
+      assert.equal(light.get(`--face-edge-${a}`), '#e5e8f2', `--face-edge-${a}: jemný neutrální obrys`);
+      const shade = light.get(`--face-shade-${a}`);
+      assert.ok(shade.startsWith('rgba(24, 32, 80,') && alpha(shade) <= 0.25, `--face-shade-${a}: neutrální měkký stín`);
+      // po najetí jen velmi světlý tón vlastní barvy (~8 %)
+      const hover = light.get(`--tint-hover-${a}`);
+      assert.ok(ratio(hover, '#ffffff') < 1.13, `--tint-hover-${a} je velmi světlý (${ratio(hover, '#ffffff').toFixed(3)})`);
+      assert.notEqual(hover, '#ffffff', `--tint-hover-${a} je tón, ne bílá`);
+    }
+    assert.equal(light.get('--face-edge-fb'), '#e5e8f2');
+    assert.ok(alpha(light.get('--face-lift')) > 0, 'měkký neutrální stín karet');
+    assert.equal(light.get('--face-bw'), '1px');
+    assert.equal(light.get('--face-ring'), '1px');
+    assert.equal(light.get('--face-stripe'), '4px');
+    // barevné záře v pozadí sotva znatelné
+    for (const g of ['--glow-pink', '--glow-sun', '--glow-blue', '--glow-green', '--glow-orange', '--glow-fb']) {
+      assert.ok(alpha(light.get(g)) <= 0.12, `${g} = ${light.get(g)}`);
+    }
+    // Dlaždice služeb, reference, O mně, Kontakt a Facebook: jednotně proužek nahoře (vnitřní stín
+    // + horní obrys v barvě karty), jemný obrys a stín z tokenů karet (žádná sytá barva natvrdo).
+    const at = (sel, prop) => decls.find((d) => d.path.length === 1 && d.path[0] === sel && d.prop === prop)?.value;
+    for (const [sel, edge, face] of [['.service', '--acc-edge', '--acc-face-edge'], ['.ref', '--acc-edge', '--acc-face-edge'],
+      ['.traits', '--edge-pink', '--face-edge-pink'], ['.contact-card', '--edge-green', '--face-edge-green'], ['.contact-fb', '--fb-blue', '--face-edge-fb']]) {
+      assert.equal(at(sel, 'border'), `var(--face-bw) solid var(${face})`, `${sel} border`);
+      assert.equal(at(sel, 'border-top-color'), `var(${edge})`, `${sel} border-top-color`);
+      const shadow = at(sel, 'box-shadow') ?? '';
+      assert.ok(shadow.startsWith(`inset 0 var(--face-stripe) 0 var(${edge}), `), `${sel}: proužek nahoře`);
+      assert.ok(!/var\(--(pink|sun|blue|green|orange|fb-blue|acc)\)/.test(shadow.replace(/^inset 0 var\(--face-stripe\) 0 var\([^)]+\), /, '')), `${sel}: stín bez syté barvy`);
+    }
+    // Zvýrazněné slovo v nadpisu: ve světlém motivu jen zvýrazňovač přes spodní část slova
+    // (nejvýš polovina výšky), přechod za fotkami tlumený, miniatury FB s neutrálním obrysem.
+    assert.equal(at('.hl', 'background'), 'linear-gradient(var(--hl), var(--hl)) var(--hl-pos) / var(--hl-size) no-repeat');
+    const [, hlH] = light.get('--hl-size').split(' ').map(parseFloat);
+    const [, hlY] = light.get('--hl-pos').split(' ').map(parseFloat);
+    assert.ok(hlH <= 50, `--hl-size: výška ${hlH} %`);
+    assert.ok(hlY >= 70, `--hl-pos: pruh dole (${hlY} %)`);
+    const frameOpacity = Number(light.get('--frame-opacity'));
+    assert.ok(frameOpacity > 0 && frameOpacity <= 0.5, `--frame-opacity = ${frameOpacity}`);
+    const frameRule = decls.find((d) => d.path.at(-1).split(',').map((x) => x.trim()).includes('.hero-frame::before') && d.prop === 'opacity');
+    assert.equal(frameRule?.value, 'var(--frame-opacity)', 'přechod za fotkou v úvodu i v O mně');
+    assert.ok(frameRule.path.at(-1).includes('.about-frame::before'), 'přechod za fotkou v O mně');
+    assert.equal(light.get('--fb-shot-ring'), '#e5e8f2');
+    assert.ok((at('.fb-shot', 'box-shadow') ?? '').endsWith('0 0 0 1px var(--fb-shot-ring)'), '.fb-shot: obrys neutrálním tokenem, ne září');
+    assert.equal(at('.chip', 'background'), 'var(--acc-face)');
+    assert.equal(at('.chip', 'border'), '1px solid var(--acc-face-edge)');
+    assert.equal(at('.section-title .kicker', 'box-shadow'), '0 14px 34px -16px var(--acc-shade)');
+  });
+
   test('kontrastní test pokrývá všechny barvy textu a pozadí ze světlého :root', () => {
     // Nová barva textu/pozadí musí dostat dvojici v CONTRAST_PAIRS (výjimky = čistě dekorativní tokeny
     // a tokeny s průhledností, které hlídá test výše).
     // Obrysy --edge-* jsou dekorace: dlaždici i kartu identifikuje její text a tónované pozadí.
     const DECOR = new Set(['--print-ink', '--line', '--line-strong', '--card-hi', '--shadow-color', '--ico-w',
-      '--glow-pink', '--glow-sun', '--glow-blue', '--glow-green', '--glow-orange', '--glow-fb', '--header-bg', '--header-shadow',
-      '--edge-pink', '--edge-sun', '--edge-blue', '--edge-green', '--edge-orange']);
+      '--glow-pink', '--glow-sun', '--glow-blue', '--glow-green', '--glow-orange', '--glow-fb', '--fb-shot-ring', '--header-bg', '--header-shadow',
+      '--edge-pink', '--edge-sun', '--edge-blue', '--edge-green', '--edge-orange',
+      ...[...ACCENTS, '--fb'].flatMap((a) => [a.replace('--', '--face-edge-'), a.replace('--', '--face-shade-')]), '--face-lift']);
     const light = tokenBlock(decls, (p) => p.length === 1 && p[0] === ':root');
     const covered = new Set(CONTRAST_PAIRS.flatMap(([fg, bg]) => [fg, bg]));
     const colors = [...light].filter(([name, value]) => name.startsWith('--') && COLOR_LITERAL.test(value)).map(([name]) => name);
@@ -311,7 +422,7 @@ describe('CSS motivy (světlý / tmavý)', () => {
     for (const name of ACCENTS) assert.match(light.get(name), /^#[0-9a-f]{6}$/, name);
     // Každá barva akcentu má třídu .acc-* s odstínem, září a druhou barvou pro detaily ikon.
     for (const a of ACCENTS.map((n) => n.slice(2))) {
-      for (const prop of ['--acc', '--acc-edge', '--acc-tint', '--acc-glow', '--acc-x']) {
+      for (const prop of ['--acc', '--acc-edge', '--acc-tint', '--acc-tint-hover', '--acc-glow', '--acc-x', '--acc-face', '--acc-face-edge', '--acc-shade']) {
         assert.ok(decls.some((d) => d.path.at(-1) === `.acc-${a}` && d.prop === prop), `.acc-${a} ${prop}`);
       }
     }

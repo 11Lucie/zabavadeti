@@ -102,7 +102,7 @@ function navItems(c, prefix) {
 export const THEME_TOGGLE_LABEL = 'Vzhled: podle systému. Přepnout na světlý.';
 // Browser bar colours = page background (--bg) of the light and the dark theme
 // (tests/theme.test.mjs checks they match src/styles.css).
-export const THEME_COLORS = { light: '#f6f7fd', dark: '#0b1026' };
+export const THEME_COLORS = { light: '#ffffff', dark: '#0b1026' };
 
 function themeToggle() {
   return html`<button type="button" class="theme-toggle" data-mode="auto" aria-label="${THEME_TOGGLE_LABEL}" title="${THEME_TOGGLE_LABEL}" hidden>${uiIcon('auto', 'ti-auto')}${uiIcon('sun', 'ti-light')}${uiIcon('moon', 'ti-dark')}</button>`;
