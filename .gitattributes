@@ -1,0 +1,7 @@
+# Všechny textové soubory s LF (stejně jako na Cloudflare), aby nesouhlasily otisky souborů.
+* text=auto eol=lf
+# Vendorovaný Decap CMS: bajty se nesmí měnit (index.html ověřuje jeho integritní otisk).
+static/admin/decap-cms.js binary
+
+# Písma: binární soubory, bajty se nesmí měnit (otisky v docs/VENDOR.md).
+*.woff2 binary

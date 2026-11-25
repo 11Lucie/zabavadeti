@@ -1,0 +1,13 @@
+{
+  "name": "Zábava pro děti – Měřín a okolí",
+  "short_name": "Zábava pro děti",
+  "lang": "cs",
+  "start_url": "/",
+  "scope": "/",
+  "display": "browser",
+  "background_color": "#0b1026",
+  "theme_color": "#0b1026",
+  "icons": [
+    { "src": "/favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}

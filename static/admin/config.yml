@@ -1,0 +1,431 @@
+# Decap CMS configuration – administrace webu "Zábava pro děti – Měřín a okolí".
+# Production configuration: no local_backend, no Markdown/HTML widgets, files collection only.
+# Field names are the content contract with build.mjs (see content/*.json) – do not rename them.
+# Limits (list max, text length patterns, e-mail and Facebook patterns) mirror SCHEMA in
+# src/validate.mjs; tests/config-sync.test.mjs keeps them in sync (the CMS may be stricter, never looser).
+
+backend:
+  name: github
+  repo: 11Lucie/zabavadeti
+  branch: main
+  base_url: https://www.zabavadeti.cz
+  auth_endpoint: api/auth
+  # Must match OAUTH_SCOPE of the OAuth proxy (functions/api/auth.js); the proxy ignores
+  # the scope requested by the browser and always uses its own allowlisted value.
+  auth_scope: public_repo
+  squash_merges: true
+  cms_label_prefix: decap/
+  commit_messages:
+    create: "Nový obsah: {{collection}} – {{slug}}"
+    update: "Úprava obsahu: {{collection}} – {{slug}} (upravil/a {{author-login}})"
+    delete: "Smazání obsahu: {{collection}} – {{slug}}"
+    uploadMedia: "Nahrání obrázku: {{path}}"
+    deleteMedia: "Smazání obrázku: {{path}}"
+
+# Editor saves a draft (pull request) -> administrator reviews and publishes.
+publish_mode: editorial_workflow
+
+locale: cs
+site_url: https://www.zabavadeti.cz
+display_url: https://www.zabavadeti.cz
+show_preview_links: false
+
+media_folder: static/uploads
+public_folder: /uploads
+
+# Uploaded photos are re-encoded in the browser before upload: metadata (EXIF incl. GPS position)
+# is removed and the result is always JPEG (.jpg). JPEG avoids the WebP encoder, which would
+# need WebAssembly ('wasm-unsafe-eval' in CSP) and extra lazy-loaded chunks that are not vendored.
+media_processing:
+  enabled: true
+  format:
+    enabled: true
+    default: "jpeg"
+  quality: 85
+  strip_metadata: true
+
+# File names of uploads (and slugs) are lower-cased by Decap and reduced to ASCII.
+slug:
+  encoding: ascii
+  clean_accents: true
+  sanitize_replacement: "-"
+
+collections:
+  - name: stranky
+    label: "Obsah webu"
+    label_singular: "Stránka"
+    description: >-
+      Tady upravíte texty a fotky na webu. Po úpravě klikněte na „Uložit“. Změna se na webu
+      objeví až poté, co ji správkyně webu schválí a zveřejní.
+    create: false
+    delete: false
+    editor:
+      preview: false
+    files:
+      # ------------------------------------------------------------------ nastaveni.json
+      - name: nastaveni
+        label: "Základní nastavení webu"
+        file: content/nastaveni.json
+        description: "Název webu, popis pro vyhledávače (Google, Seznam) a odkaz na Facebook."
+        fields:
+          - label: "Název webu"
+            name: nazev_webu
+            widget: string
+            pattern: ['^.{0,60}$', 'Text může mít nejvýše 60 znaků']
+            required: true
+            hint: "Zobrazuje se v horní části každé stránky, např. „Zábava pro děti“."
+          - label: "Podtitul"
+            name: podtitul
+            widget: string
+            pattern: ['^.{0,80}$', 'Text může mít nejvýše 80 znaků']
+            required: false
+            hint: "Krátký doplněk pod názvem, např. „Měřín a okolí“."
+          - label: "Titulek pro vyhledávače"
+            name: seo_titulek
+            widget: string
+            pattern: ['^.{0,70}$', 'Text může mít nejvýše 70 znaků']
+            required: true
+            hint: "Text, který se ukáže jako modrý nadpis ve výsledcích Googlu a na záložce prohlížeče. Ideálně do 60 znaků."
+          - label: "Popis pro vyhledávače"
+            name: seo_popis
+            widget: string
+            required: true
+            hint: "Jedna až dvě věty pod nadpisem ve výsledcích vyhledávání. Nejvýše 160 znaků."
+            pattern: ['^.{1,160}$', 'Popis může mít nejvýše 160 znaků a nesmí být prázdný']
+          - label: "Odkaz na Facebook"
+            name: facebook
+            widget: string
+            required: false
+            hint: "Celá adresa stránky nebo skupiny na Facebooku, začíná https://www.facebook.com/ (zkopírujte ji z adresního řádku prohlížeče, když máte stránku otevřenou). Odkazy na sdílení, přihlášení nebo přesměrování (např. l.php, sharer, dialog) ani adresy se zakódovanými znaky typu %2F web nepřijme. Pokud Facebook na webu nechcete, nechte pole prázdné."
+            pattern: ['^(?=.{0,300}$)(https://www[.]facebook[.]com/(?![?#])(?![.])(?!.*/[.])(?!(?:[lL]|[lL][mM]|[lL][oO][gG][iI][nN]|[lL][oO][gG][oO][uU][tT]|[sS][hH][aA][rR][eE][rR]|[pP][rR][oO][fF][iI][lL][eE]_[rR][eE][dD][iI][rR][eE][cC][tT])[.][pP][hH][pP])(?!(?:[fF][lL][xX]|[dD][iI][aA][lL][oO][gG]|[sS][hH][aA][rR][eE][rR]|[lL][oO][gG][iI][nN]|[lL][oO][gG][oO][uU][tT]|[pP][lL][uU][gG][iI][nN][sS]|[cC][oO][nN][nN][eE][cC][tT]|[cC][hH][eE][cC][kK][pP][oO][iI][nN][tT]|[rR][eE][cC][oO][vV][eE][rR]|[aA][jJ][aA][xX]|[vV][0-9]+(?:[.][0-9]+)?)(?:[/?#]|$))(?![pP][rR][oO][fF][iI][lL][eE][.][pP][hH][pP](?:#|$))(?![pP][rR][oO][fF][iI][lL][eE][.][pP][hH][pP][?](?!id=[0-9]{1,20}(?:[&#]|$)))(?:[A-Za-z0-9._~/?=&+#-]|%(?:[Cc][2-9A-Fa-f]|[Dd][0-9A-Fa-f])%[89ABab][0-9A-Fa-f]|%[Ee]0%[ABab][0-9A-Fa-f]%[89ABab][0-9A-Fa-f]|%[Ee][1-9A-Ca-c]%[89ABab][0-9A-Fa-f]%[89ABab][0-9A-Fa-f]|%[Ee][Dd]%[89][0-9A-Fa-f]%[89ABab][0-9A-Fa-f]|%[Ee][EFef]%[89ABab][0-9A-Fa-f]%[89ABab][0-9A-Fa-f]|%[Ff]0%[9ABab][0-9A-Fa-f]%[89ABab][0-9A-Fa-f]%[89ABab][0-9A-Fa-f]|%[Ff][1-3]%[89ABab][0-9A-Fa-f]%[89ABab][0-9A-Fa-f]%[89ABab][0-9A-Fa-f]|%[Ff]4%8[0-9A-Fa-f]%[89ABab][0-9A-Fa-f]%[89ABab][0-9A-Fa-f])+)?$', 'Zadejte celou adresu vaší stránky nebo skupiny, začínající https://www.facebook.com/ (nebo pole nechte prázdné)']
+          - label: "Text u odkazu na Facebook"
+            name: facebook_text
+            widget: string
+            required: false
+            default: "Sledujte fotky a novinky z mých akcí na Facebooku"
+            pattern: ['^.{0,120}$', 'Text může mít nejvýše 120 znaků']
+            hint: "Krátká věta na kartě Facebooku v části Kontakt, např. „Sledujte fotky a novinky z mých akcí na Facebooku“. Když pole necháte prázdné, použije se právě tahle věta."
+
+      # ------------------------------------------------------------------ uvod.json
+      - name: uvod
+        label: "Úvod (první část stránky)"
+        file: content/uvod.json
+        fields:
+          - label: "Hlavní nadpis"
+            name: nadpis
+            widget: string
+            pattern: ['^.{0,90}$', 'Text může mít nejvýše 90 znaků']
+            required: true
+            hint: "Největší nadpis na webu – to první, co návštěvník uvidí."
+          - label: "Úvodní text"
+            name: perex
+            widget: text
+            pattern: ['^[\s\S]{0,600}$', 'Text může mít nejvýše 600 znaků']
+            required: true
+            hint: "Několik vět pod hlavním nadpisem. Pište obyčejný text bez formátování."
+          - label: "Nadpis seznamu „pro koho“"
+            name: pro_koho_nadpis
+            widget: string
+            pattern: ['^.{0,80}$', 'Text může mít nejvýše 80 znaků']
+            required: true
+            hint: "Např. „Pro koho akce připravuji“."
+          - label: "Pro koho"
+            name: pro_koho
+            widget: list
+            required: true
+            min: 1
+            max: 12
+            label_singular: "položku"
+            hint: "Každá položka je jeden řádek seznamu (např. „narozeninové oslavy“). Pořadí změníte přetažením."
+            field:
+              label: "Položka"
+              name: polozka
+              widget: string
+              pattern: ['^.{0,40}$', 'Text může mít nejvýše 40 znaků']
+          - label: "Školky a školy"
+            name: skolky
+            widget: text
+            pattern: ['^[\s\S]{0,400}$', 'Text může mít nejvýše 400 znaků']
+            required: false
+            hint: "Krátký odstavec o akcích pro školky a školy. Když ho nechcete, nechte prázdné."
+          - label: "Slogan"
+            name: slogan
+            widget: string
+            pattern: ['^.{0,120}$', 'Text může mít nejvýše 120 znaků']
+            required: false
+            hint: "Krátká věta, která se zobrazí zvýrazněně."
+          - label: "Fotka"
+            name: fotka
+            widget: image
+            required: false
+            choose_url: false
+            media_library:
+              allow_multiple: false
+            hint: "Nahrajte fotku ve formátu JPG, PNG nebo WebP. Před nahráním se automaticky převede na JPG a odstraní se z ní skryté údaje (např. místo pořízení)."
+          - label: "Popis fotky"
+            name: fotka_popis
+            widget: string
+            pattern: ['^.{0,160}$', 'Text může mít nejvýše 160 znaků']
+            required: false
+            hint: "Jednou větou, co je na fotce (např. „Ivona maluje dětem na obličej“). Pomáhá nevidomým a vyhledávačům."
+
+      # ------------------------------------------------------------------ sluzby.json
+      - name: sluzby
+        label: "Co nabízím (služby)"
+        file: content/sluzby.json
+        fields:
+          - label: "Nadpis"
+            name: nadpis
+            widget: string
+            pattern: ['^.{0,90}$', 'Text může mít nejvýše 90 znaků']
+            required: true
+          - label: "Úvodní text"
+            name: uvod
+            widget: text
+            pattern: ['^[\s\S]{0,800}$', 'Text může mít nejvýše 800 znaků']
+            required: false
+            hint: "Krátký odstavec nad seznamem služeb."
+          - label: "Služby"
+            name: polozky
+            widget: list
+            required: true
+            min: 1
+            max: 24
+            label_singular: "službu"
+            summary: "{{fields.nazev}}"
+            collapsed: true
+            hint: "Každá služba má název, krátký popis a barevnou ikonu; může mít i vlastní fotku. Služby s fotkou se na webu ukážou jako první, ve velké kartě. Pořadí ostatních změníte přetažením."
+            fields:
+              - label: "Název služby"
+                name: nazev
+                widget: string
+                pattern: ['^.{0,70}$', 'Text může mít nejvýše 70 znaků']
+                required: true
+                hint: "Např. „Malování na obličej“."
+              - label: "Popis"
+                name: popis
+                widget: text
+                pattern: ['^[\s\S]{0,400}$', 'Text může mít nejvýše 400 znaků']
+                required: true
+                hint: "Jedna až tři věty o tom, co služba obnáší."
+              - label: "Ikona"
+                name: ikona
+                widget: select
+                required: true
+                default: "oslava"
+                hint: "Vyberte obrázek, který se u služby zobrazí. Když službě nahrajete fotku, ikona se ukáže vedle fotky u nadpisu."
+                options:
+                  - { label: "Malování na obličej", value: "oblicej" }
+                  - { label: "Třpytivé tetování", value: "tetovani" }
+                  - { label: "Copánky a účesy", value: "copanky" }
+                  - { label: "Tvoření a dílničky", value: "tvoreni" }
+                  - { label: "Sport a hry", value: "sport" }
+                  - { label: "Skákací hrad", value: "hrad" }
+                  - { label: "Kostýmy", value: "kostymy" }
+                  - { label: "Maskoti", value: "maskoti" }
+                  - { label: "Školka a škola", value: "skolka" }
+                  - { label: "Oslava a narozeniny", value: "oslava" }
+              - label: "Fotka služby"
+                name: fotka
+                widget: image
+                required: false
+                choose_url: false
+                media_library:
+                  allow_multiple: false
+                hint: "Nepovinné. Služba s fotkou se zobrazí jako velká karta: fotka celá (nic se z ní neořízne ani nezakryje) a text vedle ní nebo pod ní. Nejlépe vypadá fotka na výšku. Nahrajte ji ve formátu JPG, PNG nebo WebP; před nahráním se automaticky převede na JPG a odstraní se z ní skryté údaje (např. místo pořízení). Na fotce dětí jen se souhlasem rodičů."
+              - label: "Popis fotky"
+                name: fotka_popis
+                widget: string
+                required: false
+                pattern: ['^.{0,160}$', 'Text může mít nejvýše 160 znaků']
+                hint: "Povinný, když má služba fotku – jednou větou, co je na fotce (např. „Maskoti Mickey a Minnie na akci“). Pomáhá nevidomým a vyhledávačům. Bez fotky nechte prázdné."
+
+      # ------------------------------------------------------------------ o-mne.json
+      - name: o-mne
+        label: "O mně"
+        file: content/o-mne.json
+        fields:
+          - label: "Nadpis"
+            name: nadpis
+            widget: string
+            pattern: ['^.{0,90}$', 'Text může mít nejvýše 90 znaků']
+            required: true
+          - label: "Odstavce textu"
+            name: odstavce
+            widget: list
+            required: true
+            min: 1
+            max: 10
+            label_singular: "odstavec"
+            hint: "Každá položka je jeden odstavec. Pořadí změníte přetažením."
+            field:
+              label: "Odstavec"
+              name: odstavec
+              widget: text
+              pattern: ['^[\s\S]{0,1200}$', 'Text může mít nejvýše 1200 znaků']
+          - label: "Nadpis seznamu vlastností"
+            name: vlastnosti_nadpis
+            widget: string
+            pattern: ['^.{0,90}$', 'Text může mít nejvýše 90 znaků']
+            required: false
+            hint: "Např. „Co mě vystihuje“."
+          - label: "Vlastnosti"
+            name: vlastnosti
+            widget: list
+            required: false
+            max: 12
+            label_singular: "vlastnost"
+            hint: "Krátké body, např. „trpělivost“ nebo „spolehlivost“."
+            field:
+              label: "Vlastnost"
+              name: vlastnost
+              widget: string
+              pattern: ['^.{0,200}$', 'Text může mít nejvýše 200 znaků']
+          - label: "Závěrečná věta"
+            name: zaver
+            widget: text
+            pattern: ['^[\s\S]{0,600}$', 'Text může mít nejvýše 600 znaků']
+            required: false
+          - label: "Fotka"
+            name: fotka
+            widget: image
+            required: false
+            choose_url: false
+            media_library:
+              allow_multiple: false
+            hint: "Nahrajte fotku ve formátu JPG, PNG nebo WebP. Před nahráním se automaticky převede na JPG a odstraní se z ní skryté údaje (např. místo pořízení)."
+          - label: "Popis fotky"
+            name: fotka_popis
+            widget: string
+            pattern: ['^.{0,160}$', 'Text může mít nejvýše 160 znaků']
+            required: false
+            hint: "Jednou větou, co je na fotce. Pomáhá nevidomým a vyhledávačům."
+
+      # ------------------------------------------------------------------ reference.json
+      - name: reference
+        label: "Reference (co o mně říkají)"
+        file: content/reference.json
+        fields:
+          - label: "Nadpis"
+            name: nadpis
+            widget: string
+            pattern: ['^.{0,90}$', 'Text může mít nejvýše 90 znaků']
+            required: true
+          - label: "Reference"
+            name: polozky
+            widget: list
+            required: false
+            max: 30
+            label_singular: "referenci"
+            summary: "{{fields.autor}}"
+            collapsed: true
+            hint: "Zveřejňujte jen reference, se kterými autor souhlasil. Stačí křestní jméno nebo název školky."
+            fields:
+              - label: "Autor"
+                name: autor
+                widget: string
+                pattern: ['^.{0,60}$', 'Text může mít nejvýše 60 znaků']
+                required: true
+                hint: "Např. „Jana“ nebo „MŠ Měřín“."
+              - label: "Kdo to je"
+                name: popis_autora
+                widget: string
+                pattern: ['^.{0,100}$', 'Text může mít nejvýše 100 znaků']
+                required: false
+                hint: "Např. „maminka oslavenkyně“."
+              - label: "Text reference"
+                name: text
+                widget: text
+                pattern: ['^[\s\S]{0,1200}$', 'Text může mít nejvýše 1200 znaků']
+                required: true
+          - label: "Odkud reference pocházejí"
+            name: overeni
+            widget: text
+            required: false
+            default: "Reference mi napsali rodiče a organizátoři po akci, kterou jsem pro ně skutečně připravila. Zveřejňuji jen reference od lidí, pro které jsem akci dělala, s jejich souhlasem a beze změny smyslu."
+            pattern: ['^[\s\S]{0,400}$', 'Text může mít nejvýše 400 znaků']
+            hint: "Povinné, kdykoli jsou na webu nějaké reference (bez nich se web nezveřejní). Zobrazí se malým písmem pod referencemi – zákon o ochraně spotřebitele (§ 4 odst. 5 zákona č. 634/1992 Sb.) vyžaduje uvést, zda a jak ověřujete, že reference jsou od lidí, kteří službu opravdu využili. Text musí odpovídat pravdě; schovávejte si zprávy nebo e-maily, ve kterých vám zákazníci referenci poslali. Když se způsob získávání referencí změní, upravte i tento text."
+
+      # ------------------------------------------------------------------ kontakt.json
+      - name: kontakt
+        label: "Kontakt"
+        file: content/kontakt.json
+        fields:
+          - label: "Nadpis"
+            name: nadpis
+            widget: string
+            pattern: ['^.{0,90}$', 'Text může mít nejvýše 90 znaků']
+            required: true
+          - label: "Výzva"
+            name: vyzva
+            widget: text
+            pattern: ['^[\s\S]{0,400}$', 'Text může mít nejvýše 400 znaků']
+            required: false
+            hint: "Krátká věta, např. „Zavolejte mi a domluvíme se.“"
+          - label: "Telefon"
+            name: telefon
+            widget: string
+            required: true
+            hint: "Ve tvaru +420 739 039 559 (s mezerami po trojicích číslic)."
+            pattern: ['^(\+420 ?)?[1-9][0-9]{2} ?[0-9]{3} ?[0-9]{3}$', 'Zadejte telefon ve tvaru +420 739 039 559']
+          - label: "E-mail"
+            name: email
+            widget: string
+            required: true
+            hint: "Např. jmeno@seznam.cz"
+            pattern: ['^(?!.*\.\.)(?=.{1,254}$)[A-Za-z0-9](?:[A-Za-z0-9._+-]{0,62}[A-Za-z0-9])?@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,24}$', 'Zadejte platnou e-mailovou adresu, např. jmeno@seznam.cz (bez mezer a bez znaků % , ? &)']
+          - label: "Název provozovny"
+            name: nazev_provozovny
+            widget: string
+            pattern: ['^.{0,100}$', 'Text může mít nejvýše 100 znaků']
+            required: false
+            hint: "Např. „Zábava pro děti – Ivona Mutlová“."
+          - label: "Adresa"
+            name: adresa
+            widget: string
+            pattern: ['^.{0,160}$', 'Text může mít nejvýše 160 znaků']
+            required: false
+            hint: "Na jednom řádku i s PSČ, např. „Balinka 619, 594 42 Měřín“. Zobrazí se v Kontaktu a vyhledávače z ní poznají PSČ i obec."
+
+      # ------------------------------------------------------------------ provozovatel.json
+      - name: provozovatel
+        label: "Provozovatel (povinné údaje)"
+        file: content/provozovatel.json
+        description: "Údaje o tom, kdo web provozuje. Zobrazují se v patičce každé stránky a na stránce Ochrana soukromí a cookies. Vyžaduje je zákon, proto je měňte jen při skutečné změně (např. stěhování)."
+        fields:
+          - label: "Jméno a příjmení"
+            name: jmeno
+            widget: string
+            required: true
+            pattern: ['^.{1,100}$', 'Pole je povinné a může mít nejvýše 100 znaků']
+            hint: "Přesně tak, jak je zapsané v živnostenském rejstříku, např. „Ivona Mutlová“."
+          - label: "IČO"
+            name: ico
+            widget: string
+            required: true
+            pattern: ['^\d{8}$', 'IČO má přesně 8 číslic (bez mezer)']
+            hint: "8 číslic bez mezer, opište ho ze živnostenského listu nebo z rzp.gov.cz. Web kontroluje i kontrolní číslici – když se při opisu spletete, web se nezveřejní a ukáže chybu."
+          - label: "Adresa (místo podnikání)"
+            name: adresa
+            widget: string
+            required: true
+            pattern: ['^.{1,160}$', 'Pole je povinné a může mít nejvýše 160 znaků']
+            hint: "Na jednom řádku i s PSČ, např. „Balinka 619, 594 42 Měřín“."
+          - label: "Zápis v rejstříku"
+            name: zapis
+            widget: text
+            required: true
+            pattern: ['^[\s\S]{1,300}$', 'Pole je povinné a může mít nejvýše 300 znaků']
+            hint: "Jedna věta o tom, kde je podnikání zapsané, např. „Fyzická osoba podnikající podle živnostenského zákona, zapsaná v živnostenském rejstříku, příslušný živnostenský úřad: Městský úřad Velké Meziříčí.“"
+          - label: "Živnostenský úřad"
+            name: zivnostensky_urad
+            widget: string
+            required: false
+            pattern: ['^.{0,120}$', 'Text může mít nejvýše 120 znaků']
+            hint: "Úřad, u kterého je živnost zapsaná (najdete ho ve výpisu na rzp.gov.cz), např. „Městský úřad Velké Meziříčí“. Uvede se na stránce Ochrana soukromí jako úřad, který vykonává dozor. Když pole necháte prázdné, napíše se obecně „příslušný živnostenský úřad“."
+          - label: "E-mail pro dotazy k osobním údajům"
+            name: email_osobni_udaje
+            widget: string
+            required: true
+            hint: "Na tuto adresu vám lidé mohou psát kvůli svým osobním údajům a fotkám (např. odvolání souhlasu). Např. jmeno@seznam.cz"
+            pattern: ['^(?!.*\.\.)(?=.{1,254}$)[A-Za-z0-9](?:[A-Za-z0-9._+-]{0,62}[A-Za-z0-9])?@(?:[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?\.)+[A-Za-z]{2,24}$', 'Zadejte platnou e-mailovou adresu, např. jmeno@seznam.cz (bez mezer a bez znaků % , ? &)']

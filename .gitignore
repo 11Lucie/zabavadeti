@@ -1,0 +1,14 @@
+dist/
+node_modules/
+.wrangler/
+*.log
+# Tajné hodnoty pro lokální vývoj (wrangler čte .dev.vars i .env). Do repozitáře nikdy –
+# je veřejný. Vzorové soubory bez hodnot (*.example) commitnout jde.
+.dev.vars
+.dev.vars*
+!.dev.vars.example
+.env
+.env.*
+!.env.example
+# Osobní nastavení Clauda na tomto počítači (.claude/launch.json do repozitáře patří).
+.claude/settings.local.json

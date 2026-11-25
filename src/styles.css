@@ -1,0 +1,2549 @@
+/* Zábava pro děti – styly webu.
+
+   Vzhled: moderní „produktový“ web v dětském duchu. Hluboká námořnická
+   plocha (nebo čistě světlá) s barevnými rozostřenými zářemi, velká zaoblená
+   písma, slova na barevných zvýrazňovacích obdélnících, pilulková tlačítka
+   a „bento“ mřížka zaoblených dlaždic.
+   JEDEN tvar pro každý druh prvku: dlaždice, štítky (pilulky) i reference se
+   liší jen velikostí a barvou akcentu (třídy .acc-pink, .acc-sun, .acc-blue,
+   .acc-green, .acc-orange). Sytá hravá paleta: růžová, sluníčková,
+   elektrická modrá, svěží zelená, oranžová – v obou motivech stejná.
+
+   Každá sekce má svou barvu (render.mjs, SECTION_COLORS): Služby žlutá,
+   O mně růžová, Reference modrá, Kontakt zelená. V barvě sekce je vyplněný
+   štítek nad nadpisem, zvýrazněné slovo nadpisu, záře v pozadí sekce
+   a podtržení položky menu. Sekce se střídají v odstínu pozadí (.section-band).
+
+   Fotky jsou vždy celé (v přirozeném poměru stran) a nikdy pod textem.
+
+   Pravidla (CSP): žádné externí zdroje, žádné data: URI. Písma a konfety jsou
+   soubory ve src/assets/; v CSS se na ně odkazuje jako url("/assets/<název>")
+   a build je zkontroluje, otiskne (/assets/<název>.<otisk>.<přípona>) a odkazy
+   přepíše.
+
+   Barvy: všechny barvy jsou CSS proměnné (tokeny). Světlé hodnoty jsou v :root,
+   tmavé ve dvou blocích níže (podle systému a ruční volba data-theme="dark",
+   oba bloky musí mít stejné hodnoty). Každá barva z :root musí být i v obou
+   tmavých blocích (i když má stejnou hodnotu); jedinou výjimkou je
+   --print-ink, který se používá jen v @media print. Mimo bloky s tokeny se
+   barvy nepíšou natvrdo – hlídá to test tests/theme.test.mjs, který spočítá
+   i kontrasty (WCAG AA) v obou motivech.
+
+   Text na sytých barevných plochách (zvýraznění, štítky sekcí, šipka dlaždice
+   po najetí, samolepka se sloganem, dlaždice 404) je vždy tmavě modrý
+   (--on-accent), na hlavním (malinovém) tlačítku bílý.
+
+   Písma (licence SIL OFL, docs/licence-pisem/, docs/VENDOR.md) se načítají jen
+   z vlastní domény (font-src 'self'), každé ve dvou částech (latin a latin-ext
+   s českými znaky), font-display: swap:
+   - „Baloo 2“ – zaoblené písmo nadpisů a loga (přednačítá se, build.mjs),
+   - „Plus Jakarta Sans“ – text. */
+
+@font-face {
+  font-family: "Baloo 2";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/assets/baloo-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Baloo 2";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/assets/baloo-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/assets/jakarta-latin.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Plus Jakarta Sans";
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url("/assets/jakarta-latin-ext.woff2") format("woff2");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+:root {
+  /* ---- rozměry a písmo ---- */
+  --max: 1240px;
+  --radius: 24px;
+  --radius-lg: 32px;
+  --header-h: 72px;
+  /* Vertikální rytmus mezer mezi bloky uvnitř sekcí (nic nesmí být nalepené na sobě). */
+  --space-s: 16px;            /* mezi odstavci */
+  --space-m: 24px;            /* mezi textem a menším blokem (štítky, karta) */
+  --space-l: 32px;            /* mezi samostatnými bloky (tlačítka, rámečky) */
+  --space-xl: 40px;           /* před závěrečnou větou a pod hlavičkou sekce */
+  --font-text: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-display: "Baloo 2", "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+
+  /* ---- soubory (src/assets/) ---- */
+  --confetti: url("/assets/konfety.svg");
+
+  /* ---- světlý motiv: stránka ---- */
+  color-scheme: light;
+  --bg: #f6f7fd;              /* skoro bílá s nádechem modré */
+  --bg-band: #eceffa;         /* každá druhá sekce */
+  --bg-alt: #e3e7f6;          /* patička */
+  --ink: #0b1026;             /* text */
+  --muted: #434b6e;           /* vedlejší text */
+  --brand: #b8145a;           /* odkazy a ikony v textu (malinová) */
+  --brand-strong: #8c0f45;    /* odkaz při najetí */
+  --focus: #1f5fe0;           /* rámeček fokusu */
+  --print-ink: #000000; /* jen pro tisk, v tmavých blocích záměrně chybí */
+
+  /* ---- karty a hlavička ---- */
+  --card: #ffffff;
+  --line: #dfe3f3;            /* tenký obrys karet (dekorace) */
+  --line-strong: #c9cfe8;     /* obrys výraznějších karet (dekorace) */
+  --card-hi: rgba(255, 255, 255, 0);       /* světlá hrana nahoře (jen tmavý motiv) */
+  --shadow-color: rgba(30, 40, 100, 0.16); /* měkký stín karet */
+  --header-bg: #ffffff;       /* lepivá hlavička: neprůhledná bílá, aby se odlišila od sekcí */
+  --header-shadow: rgba(11, 16, 38, 0.25); /* jemný stín pod hlavičkou */
+  --control-line: #7a82a8;    /* okraj kulatých tlačítek v hlavičce (3 : 1) */
+  --logo-sub: #a8124f;        /* „Měřín a okolí“ pod logem */
+
+  /* ---- syté akcenty (v obou motivech stejné) ---- */
+  --pink: #ff3d9a;
+  --sun: #ffd23f;
+  --blue: #4a8cff;
+  --green: #22c983;
+  --orange: #ff7a1a;
+  --on-accent: #0b1026;       /* text a kresba na sytých akcentech */
+  --ico-w: #ffffff;           /* bílé tvary v ikonách */
+
+  /* ---- obrysy dlaždic a referencí v barvě akcentu (dekorace; ve světlém
+          motivu o něco sytější, aby byly vidět i na bílé) ---- */
+  --edge-pink: #f0288a;
+  --edge-sun: #e3a800;
+  --edge-blue: #2f72f0;
+  --edge-green: #12a96b;
+  --edge-orange: #f2680a;
+
+  /* ---- tónované pozadí dlaždic, referencí a štítků ---- */
+  --tint-pink: #ffe0ef;
+  --tint-sun: #fff1bd;
+  --tint-blue: #dde9ff;
+  --tint-green: #d2f4e4;
+  --tint-orange: #ffe3cc;
+
+  /* ---- o stupeň výraznější tón: dlaždice služeb po najetí / při fokusu ---- */
+  --tint-hover-pink: #ffcde4;
+  --tint-hover-sun: #ffeba3;
+  --tint-hover-blue: #c9dcff;
+  --tint-hover-green: #b5ecd2;
+  --tint-hover-orange: #ffd2ad;
+
+  /* ---- barevné záře v pozadí (dekorace) ---- */
+  --glow-pink: rgba(255, 61, 154, 0.16);
+  --glow-sun: rgba(255, 210, 63, 0.3);
+  --glow-blue: rgba(74, 140, 255, 0.18);
+  --glow-green: rgba(34, 201, 131, 0.2);
+  --glow-orange: rgba(255, 122, 26, 0.16);
+  --glow-fb: rgba(24, 119, 242, 0.16);
+
+  /* ---- tlačítka ---- */
+  --btn-bg: #c2165a;          /* hlavní: malinová, bílý tučný text */
+  --btn-bg-hover: #a9124e;
+  --btn-ink: #ffffff;
+  --btn2-line: #0b1026;       /* obrysové tlačítko */
+  --btn2-bg-hover: #e3e7f6;
+
+  /* ---- Facebook (logo a tlačítko v kontaktu) ---- */
+  --fb-blue: #1877f2;
+  --fb-btn: #1463d1;
+  --fb-ink: #ffffff;
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* ---- tmavý motiv (hlavní vzhled): hluboká námořnická noc s barevnými zářemi ----
+   Jen pro obrazovku – tisk je vždy světlý. Hodnoty v obou blocích musí být
+   stejné (hlídá test). */
+@media screen and (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --bg: #0b1026;
+    --bg-band: #10173a;
+    --bg-alt: #070b1c;
+    --ink: #f3f5ff;
+    --muted: #b3bbdf;
+    --brand: #ff70b6;
+    --brand-strong: #ffa3cf;
+    --focus: #ffd23f;
+    --card: #161e46;
+    --line: #2a3563;
+    --line-strong: #3b4880;
+    --card-hi: rgba(255, 255, 255, 0.07);
+    --shadow-color: rgba(0, 0, 0, 0.55);
+    --header-bg: rgba(11, 16, 38, 0.96);
+    --header-shadow: rgba(0, 0, 0, 0.6);
+    --control-line: #6672a8;
+    --logo-sub: #ffd23f;
+    --pink: #ff3d9a;
+    --sun: #ffd23f;
+    --blue: #4a8cff;
+    --green: #22c983;
+    --orange: #ff7a1a;
+    --on-accent: #0b1026;
+    --ico-w: #ffffff;
+    --edge-pink: #ff3d9a;
+    --edge-sun: #ffd23f;
+    --edge-blue: #4a8cff;
+    --edge-green: #22c983;
+    --edge-orange: #ff7a1a;
+    --tint-pink: #47173f;
+    --tint-sun: #3a3216;
+    --tint-blue: #15295c;
+    --tint-green: #0e3934;
+    --tint-orange: #452418;
+    --tint-hover-pink: #5c1d52;
+    --tint-hover-sun: #4d4219;
+    --tint-hover-blue: #1c3675;
+    --tint-hover-green: #124a43;
+    --tint-hover-orange: #5a2e1d;
+    --glow-pink: rgba(255, 61, 154, 0.3);
+    --glow-sun: rgba(255, 210, 63, 0.15);
+    --glow-blue: rgba(74, 140, 255, 0.32);
+    --glow-green: rgba(34, 201, 131, 0.24);
+    --glow-orange: rgba(255, 122, 26, 0.22);
+    --glow-fb: rgba(24, 119, 242, 0.3);
+    --btn-bg: #c2165a;
+    --btn-bg-hover: #a9124e;
+    --btn-ink: #ffffff;
+    --btn2-line: #dfe3fb;
+    --btn2-bg-hover: #1f2958;
+    --fb-blue: #1877f2;
+    --fb-btn: #1463d1;
+    --fb-ink: #ffffff;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0b1026;
+  --bg-band: #10173a;
+  --bg-alt: #070b1c;
+  --ink: #f3f5ff;
+  --muted: #b3bbdf;
+  --brand: #ff70b6;
+  --brand-strong: #ffa3cf;
+  --focus: #ffd23f;
+  --card: #161e46;
+  --line: #2a3563;
+  --line-strong: #3b4880;
+  --card-hi: rgba(255, 255, 255, 0.07);
+  --shadow-color: rgba(0, 0, 0, 0.55);
+  --header-bg: rgba(11, 16, 38, 0.96);
+  --header-shadow: rgba(0, 0, 0, 0.6);
+  --control-line: #6672a8;
+  --logo-sub: #ffd23f;
+  --pink: #ff3d9a;
+  --sun: #ffd23f;
+  --blue: #4a8cff;
+  --green: #22c983;
+  --orange: #ff7a1a;
+  --on-accent: #0b1026;
+  --ico-w: #ffffff;
+  --edge-pink: #ff3d9a;
+  --edge-sun: #ffd23f;
+  --edge-blue: #4a8cff;
+  --edge-green: #22c983;
+  --edge-orange: #ff7a1a;
+  --tint-pink: #47173f;
+  --tint-sun: #3a3216;
+  --tint-blue: #15295c;
+  --tint-green: #0e3934;
+  --tint-orange: #452418;
+  --tint-hover-pink: #5c1d52;
+  --tint-hover-sun: #4d4219;
+  --tint-hover-blue: #1c3675;
+  --tint-hover-green: #124a43;
+  --tint-hover-orange: #5a2e1d;
+  --glow-pink: rgba(255, 61, 154, 0.3);
+  --glow-sun: rgba(255, 210, 63, 0.15);
+  --glow-blue: rgba(74, 140, 255, 0.32);
+  --glow-green: rgba(34, 201, 131, 0.24);
+  --glow-orange: rgba(255, 122, 26, 0.22);
+  --glow-fb: rgba(24, 119, 242, 0.3);
+  --btn-bg: #c2165a;
+  --btn-bg-hover: #a9124e;
+  --btn-ink: #ffffff;
+  --btn2-line: #dfe3fb;
+  --btn2-bg-hover: #1f2958;
+  --fb-blue: #1877f2;
+  --fb-btn: #1463d1;
+  --fb-ink: #ffffff;
+}
+
+/* ------------------------------------------------------------------------
+   Základ
+   ------------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-padding-top: calc(var(--header-h) + 16px);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  margin: 0;
+  overflow-x: clip;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-text);
+  font-size: 1.0625rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+a {
+  color: var(--brand);
+  text-underline-offset: 0.18em;
+}
+
+a:hover {
+  color: var(--brand-strong);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+}
+
+main:focus {
+  outline: none;
+}
+
+h1,
+h2,
+h3 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: clamp(2.6rem, 1.6rem + 4.4vw, 5.1rem);
+  line-height: 1.04;
+}
+
+h2 {
+  font-size: clamp(2.1rem, 1.5rem + 2.4vw, 3.5rem);
+  line-height: 1.06;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.wrap {
+  width: 100%;
+  max-width: calc(var(--max) + 32px);
+  margin-inline: auto;
+  padding-inline: 16px;
+}
+
+@media (min-width: 720px) {
+  .wrap {
+    max-width: calc(var(--max) + 64px);
+    padding-inline: 32px;
+  }
+}
+
+.skip-link {
+  position: absolute;
+  top: -100px;
+  left: 16px;
+  z-index: 100;
+  padding: 12px 20px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.skip-link:focus {
+  top: 12px;
+  color: var(--bg);
+}
+
+.ui-icon {
+  display: block;
+  flex: none;
+  width: 20px;
+  height: 20px;
+}
+
+/* Barva akcentu prvku (dlaždice, štítky, reference, sekce, položky menu).
+   --acc je sytá barva (výplň), --acc-edge obrys, --acc-tint tónované pozadí,
+   --acc-tint-hover o stupeň výraznější tón (dlaždice po najetí), --acc-glow záře
+   a --acc-x druhý, kontrastní akcent pro detaily ikon. */
+.acc-pink {
+  --acc: var(--pink);
+  --acc-edge: var(--edge-pink);
+  --acc-tint: var(--tint-pink);
+  --acc-tint-hover: var(--tint-hover-pink);
+  --acc-glow: var(--glow-pink);
+  --acc-x: var(--sun);
+}
+
+.acc-sun {
+  --acc: var(--sun);
+  --acc-edge: var(--edge-sun);
+  --acc-tint: var(--tint-sun);
+  --acc-tint-hover: var(--tint-hover-sun);
+  --acc-glow: var(--glow-sun);
+  --acc-x: var(--pink);
+}
+
+.acc-blue {
+  --acc: var(--blue);
+  --acc-edge: var(--edge-blue);
+  --acc-tint: var(--tint-blue);
+  --acc-tint-hover: var(--tint-hover-blue);
+  --acc-glow: var(--glow-blue);
+  --acc-x: var(--sun);
+}
+
+.acc-green {
+  --acc: var(--green);
+  --acc-edge: var(--edge-green);
+  --acc-tint: var(--tint-green);
+  --acc-tint-hover: var(--tint-hover-green);
+  --acc-glow: var(--glow-green);
+  --acc-x: var(--pink);
+}
+
+.acc-orange {
+  --acc: var(--orange);
+  --acc-edge: var(--edge-orange);
+  --acc-tint: var(--tint-orange);
+  --acc-tint-hover: var(--tint-hover-orange);
+  --acc-glow: var(--glow-orange);
+  --acc-x: var(--blue);
+}
+
+/* Zvýrazňovací obdélník za slovem nadpisu (jako fixa). Kreslí se přechodem
+   jen přes střední část řádku – zaoblené písmo má vysoké okraje řádku a celé
+   pozadí by bylo příliš vysoké. */
+.hl {
+  padding: 0 0.16em;
+  border-radius: 0.2em;
+  background: linear-gradient(var(--hl), var(--hl)) 0 72% / 100% 76% no-repeat;
+  color: var(--on-accent);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+.hl-pink {
+  --hl: var(--pink);
+}
+
+.hl-sun {
+  --hl: var(--sun);
+}
+
+.hl-blue {
+  --hl: var(--blue);
+}
+
+.hl-green {
+  --hl: var(--green);
+}
+
+/* Štítek (pilulka). Obecně obrysový (úvod, 404); nad nadpisem sekce vyplněný
+   barvou sekce. */
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 18px;
+  padding: 6px 16px 6px 12px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  font-size: 0.875rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.kicker .ui-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--brand);
+}
+
+.section-title .kicker {
+  gap: 10px;
+  padding: 8px 20px 8px 14px;
+  border-color: var(--acc);
+  background: var(--acc);
+  color: var(--on-accent);
+  font-size: 1rem;
+  box-shadow: 0 14px 34px -16px var(--acc);
+}
+
+.section-title .kicker::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--on-accent);
+}
+
+/* ---- tlačítka (pilulky) ---- */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 12px 22px;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  font-family: var(--font-text);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-decoration: none;
+}
+
+.btn > span {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.btn-primary,
+.btn-primary:hover {
+  color: var(--btn-ink);
+}
+
+.btn-primary {
+  border-color: var(--btn-bg);
+  background: var(--btn-bg);
+  box-shadow: 0 14px 34px -14px var(--btn-bg);
+}
+
+.btn-primary:hover {
+  border-color: var(--btn-bg-hover);
+  background: var(--btn-bg-hover);
+}
+
+.btn-secondary,
+.btn-secondary:hover {
+  color: var(--ink);
+}
+
+.btn-secondary {
+  border-color: var(--btn2-line);
+  background: transparent;
+}
+
+.btn-secondary:hover {
+  background: var(--btn2-bg-hover);
+}
+
+.btn-lg {
+  min-height: 56px;
+  padding: 14px 26px;
+  font-size: 1.0625rem;
+}
+
+.btn-lg .ui-icon {
+  width: 22px;
+  height: 22px;
+}
+
+/* Velká kontaktní tlačítka: ikona v kolečku, popisek a číslo/adresa pod sebou. */
+.btn-xl {
+  flex: 1 1 auto;
+  min-height: 76px;
+  justify-content: flex-start;
+  gap: 14px;
+  padding: 10px 26px 10px 10px;
+  text-align: left;
+}
+
+.btn-xl .ui-icon {
+  width: 52px;
+  height: 52px;
+  padding: 14px;
+  border-radius: 50%;
+}
+
+.btn-primary.btn-xl .ui-icon {
+  background: var(--btn-ink);
+  color: var(--btn-bg);
+}
+
+.btn-secondary.btn-xl .ui-icon {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.btn-lines {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.contact-label {
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.contact-value {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .btn,
+  .quick,
+  .theme-toggle,
+  .nav-mobile > summary,
+  .service,
+  .service-go,
+  .copy-btn,
+  .contact-fb,
+  .contact-fb-cta,
+  .footer-top {
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease, color 0.2s ease;
+  }
+
+  .nav-wide a::after {
+    transition: transform 0.2s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .contact-fb:hover .contact-fb-cta .ui-icon {
+    transform: translateX(4px);
+  }
+}
+
+/* ------------------------------------------------------------------------
+   Hlavička (lepivá)
+   ------------------------------------------------------------------------ */
+
+/* Hlavička se má od sekcí pod ní jasně odlišit: (skoro) neprůhledné pozadí, jemný stín
+   a tenký proužek v barvách sekcí (žlutá -> růžová -> modrá -> zelená) podél spodního okraje. */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  border-bottom: 6px solid var(--blue);
+  border-image: linear-gradient(90deg, var(--pink), var(--orange), var(--sun), var(--green), var(--blue)) 1;
+  background: var(--header-bg);
+  box-shadow: 0 6px 20px -12px var(--header-shadow);
+  -webkit-backdrop-filter: saturate(1.4) blur(14px);
+  backdrop-filter: saturate(1.4) blur(14px);
+}
+
+.header-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--header-h);
+}
+
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+  margin: 0 auto 0 0;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.logo:hover {
+  color: var(--ink);
+}
+
+.logo-mark {
+  display: none;
+  flex: none;
+}
+
+.logo-svg {
+  display: block;
+  width: 42px;
+  height: 42px;
+}
+
+.lm-tile {
+  fill: var(--pink);
+}
+
+.lm-star {
+  fill: var(--sun);
+  stroke: var(--sun);
+}
+
+.lm-dot {
+  fill: var(--blue);
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.logo-title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+
+/* „Měřín a okolí“ – výrazně čitelné, ne drobný šedý podpis. */
+.logo-sub {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--logo-sub);
+  font-size: 0.875rem;
+  font-weight: 800;
+  line-height: 1.3;
+  white-space: nowrap;
+}
+
+.logo-sub .ui-icon {
+  width: 15px;
+  height: 15px;
+  stroke-width: 2.5;
+}
+
+.nav-list {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-wide {
+  display: none;
+}
+
+.nav-wide .nav-list {
+  gap: 2px;
+}
+
+/* Položka menu: po najetí podtržení barvou sekce. */
+.nav-wide a {
+  position: relative;
+  display: block;
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.nav-wide a::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  bottom: 3px;
+  left: 14px;
+  height: 4px;
+  border-radius: 4px;
+  background: var(--acc-edge);
+  transform: scaleX(0);
+}
+
+.nav-wide a:hover,
+.nav-wide a:focus-visible {
+  color: var(--ink);
+}
+
+.nav-wide a:hover::after,
+.nav-wide a:focus-visible::after {
+  transform: scaleX(1);
+}
+
+.header-actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Kulatá tlačítka v hlavičce: telefon, Facebook, vzhled, menu (44 × 44). */
+.quick,
+.theme-toggle,
+.nav-mobile > summary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--control-line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.quick:hover,
+.theme-toggle:hover,
+.nav-mobile > summary:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+/* Telefon: jediné výrazné tlačítko v hlavičce (na mobilu kulatá ikona,
+   na počítači pilulka s číslem). */
+.quick-phone,
+.quick-phone:hover {
+  border-color: var(--btn-bg);
+  background: var(--btn-bg);
+  color: var(--btn-ink);
+}
+
+.quick-phone:hover {
+  border-color: var(--btn-bg-hover);
+  background: var(--btn-bg-hover);
+}
+
+.quick-text {
+  display: none;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.theme-toggle .ui-icon {
+  display: none;
+}
+
+.theme-toggle[data-mode="auto"] .ti-auto,
+.theme-toggle[data-mode="light"] .ti-light,
+.theme-toggle[data-mode="dark"] .ti-dark {
+  display: block;
+}
+
+.nav-mobile {
+  position: relative;
+}
+
+.nav-mobile > summary {
+  list-style: none;
+}
+
+.nav-mobile > summary::-webkit-details-marker {
+  display: none;
+}
+
+.nav-drop {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  min-width: 230px;
+  padding: 8px;
+  border: 1px solid var(--control-line);
+  border-radius: 20px;
+  background: var(--card);
+  box-shadow: 0 24px 60px -20px var(--shadow-color);
+}
+
+.nav-drop .nav-list {
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-drop a {
+  display: block;
+  padding: 12px 16px;
+  border-radius: 12px;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+  box-shadow: inset 4px 0 0 var(--acc-edge);
+}
+
+.nav-drop a:hover {
+  background: var(--acc-tint);
+  color: var(--ink);
+}
+
+/* Úzké telefony: menší název, tlačítka zůstávají 44 × 44. */
+@media (max-width: 399px) {
+  .logo-title {
+    font-size: 1.05rem;
+  }
+
+  .logo-sub {
+    font-size: 0.8125rem;
+  }
+}
+
+@media (min-width: 440px) {
+  .logo-mark {
+    display: block;
+  }
+
+  .header-actions {
+    gap: 6px;
+  }
+}
+
+@media (min-width: 640px) {
+  .header-actions {
+    gap: 8px;
+  }
+
+  .quick-phone {
+    gap: 8px;
+    width: auto;
+    padding: 0 20px 0 16px;
+  }
+
+  .quick-text {
+    display: inline;
+  }
+
+  .logo-title {
+    font-size: 1.4rem;
+  }
+
+  .logo-sub {
+    font-size: 0.9375rem;
+  }
+}
+
+@media (min-width: 1100px) {
+  .nav-wide {
+    display: block;
+    margin-right: 4px;
+  }
+
+  .nav-mobile {
+    display: none;
+  }
+}
+
+/* ------------------------------------------------------------------------
+   Sekce: každá má svou barvu (záře) a sekce se střídají v odstínu pozadí.
+   ------------------------------------------------------------------------ */
+
+.section {
+  padding-block: 64px;
+}
+
+@media (min-width: 900px) {
+  .section {
+    padding-block: 104px;
+  }
+}
+
+.section-services,
+.section-about,
+.section-refs,
+.section-contact,
+.legal {
+  background-image:
+    radial-gradient(55% 45% at 100% 0%, var(--acc-glow), transparent 70%),
+    radial-gradient(45% 40% at 0% 100%, var(--acc-glow), transparent 70%);
+}
+
+.section-band {
+  border-block: 1px solid var(--line);
+  background-color: var(--bg-band);
+}
+
+.section-head {
+  margin-bottom: var(--space-xl);
+}
+
+.section-intro {
+  max-width: 36em;
+  margin: 20px 0 0;
+  color: var(--muted);
+  font-size: 1.125rem;
+}
+
+@media (min-width: 1000px) {
+  .section-services .section-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 56px;
+    align-items: end;
+    margin-bottom: 48px;
+  }
+
+  .section-services .section-intro {
+    margin: 0;
+  }
+}
+
+/* ---- úvod ---- */
+
+.hero {
+  padding-block: 40px 72px;
+  background:
+    radial-gradient(50% 60% at 85% 22%, var(--glow-pink), transparent 70%),
+    radial-gradient(45% 55% at 5% 15%, var(--glow-blue), transparent 70%),
+    radial-gradient(40% 40% at 50% 80%, var(--glow-sun), transparent 70%);
+}
+
+.hero-grid {
+  display: grid;
+  gap: 56px;
+  align-items: center;
+}
+
+.lead {
+  max-width: 34em;
+  margin: var(--space-m) 0 0;
+  color: var(--muted);
+  font-size: 1.1875rem;
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: var(--space-l) 0 0;
+}
+
+@media (max-width: 479px) {
+  .cta .btn {
+    flex: 1 1 100%;
+  }
+
+  .btn-lg {
+    padding-inline: 20px;
+    font-size: 1rem;
+  }
+}
+
+/* Štítky „pro koho“ a karta mateřských škol tvoří jeden blok: karta je přesně
+   stejně široká jako řádek štítků nad ní a má stejný levý okraj. Blok je
+   široký podle štítků (width: fit-content); karta se do jeho šířky nepočítá
+   (contain: inline-size) a jen ho vyplní. Když se štítky zalomí (telefon),
+   blok i karta zaberou celý textový sloupec. Mezery mezi bloky úvodu jsou
+   všude stejné (--space-l). */
+.hero-audience {
+  display: grid;
+  gap: var(--space-l);
+  width: fit-content;
+  max-width: 100%;
+  margin-top: var(--space-l);
+}
+
+.for-whom {
+  min-width: 0;
+}
+
+.for-whom-title {
+  margin: 0 0 12px;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 8px 16px 8px 12px;
+  border: 1px solid var(--acc-edge);
+  border-radius: 999px;
+  background: var(--acc-tint);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.chip::before {
+  content: "";
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--acc);
+}
+
+/* Mateřské školy: malá karta v oranžové (barvu nepoužívá žádný štítek nad ní):
+   oranžový obrys, oranžově tónované pozadí a ikona školky na oranžové
+   dlaždici vlevo, ikona i text svisle na středu. */
+.hero-note {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  contain: inline-size;
+  margin: 0;
+  padding: 12px 18px 12px 12px;
+  border: 2px solid var(--acc-edge);
+  border-radius: 20px;
+  background: var(--acc-tint);
+  color: var(--ink);
+  font-size: 0.9375rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.hero-note-icon {
+  display: block;
+  flex: none;
+}
+
+.hero-note-text {
+  min-width: 0;
+}
+
+.hero-note .service-svg {
+  width: 44px;
+  height: 44px;
+}
+
+.hero-media {
+  position: relative;
+  justify-self: center;
+  width: min(100%, 420px);
+}
+
+/* Fotka leží na barevné ploše (přechod) – nic ji nepřekrývá. */
+.hero-frame,
+.about-frame {
+  position: relative;
+}
+
+.hero-frame::before,
+.about-frame::before {
+  content: "";
+  position: absolute;
+  inset: 26px -14px -14px 26px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(135deg, var(--pink), var(--orange) 55%, var(--sun));
+}
+
+.hero-frame::after {
+  content: "";
+  position: absolute;
+  top: -40px;
+  right: -12px;
+  width: 110px;
+  height: 110px;
+  background: var(--confetti) no-repeat center / contain;
+}
+
+.photo-card {
+  position: relative;
+  z-index: 1;
+  margin: 0;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: 0 34px 80px -34px var(--shadow-color), 0 0 70px -20px var(--glow-pink);
+}
+
+.photo-card .photo {
+  width: 100%;
+}
+
+/* Slogan jako výrazná samolepka: sluníčkově žlutá pilulka s tmavě modrým
+   textem, bílým lemem a ikonou, mírně natočená. Na užších obrazovkách pod
+   fotkou (aby nic nezakrývala), od 720 px přilepená přes levý dolní roh fotky –
+   tam je na fotce jen podlaha, obličej ani hlavy maskotů nezakryje. */
+.hero-badge {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: fit-content;
+  max-width: calc(100% - 24px);
+  margin: var(--space-l) auto 0;
+  padding: 10px 22px 10px 14px;
+  border: 3px solid var(--ico-w);
+  border-radius: 999px;
+  background: var(--sun);
+  color: var(--on-accent);
+  box-shadow: 0 18px 36px -14px var(--shadow-color), 0 10px 30px -12px var(--sun);
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 800;
+  line-height: 1.2;
+  text-align: center;
+  text-wrap: balance;
+  transform: rotate(-3deg);
+}
+
+.hero-badge .ui-icon {
+  width: 24px;
+  height: 24px;
+  color: var(--on-accent);
+  fill: var(--pink);
+}
+
+/* Úzké telefony: menší písmo, aby se slogan vešel na jeden řádek. */
+@media (max-width: 479px) {
+  .hero-badge {
+    gap: 8px;
+    padding: 8px 18px 8px 12px;
+    font-size: 1rem;
+  }
+
+  .hero-badge .ui-icon {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Nejužší telefony (360 px): ještě o kousek menší písmo a odsazení, aby
+   slogan zůstal na jednom řádku a pilulka se nestala širokým pruhem. */
+@media (max-width: 399px) {
+  .hero-badge {
+    gap: 6px;
+    padding: 8px 14px 8px 10px;
+    font-size: 0.9375rem;
+  }
+
+  .hero-badge .ui-icon {
+    width: 18px;
+    height: 18px;
+  }
+}
+
+@media (min-width: 720px) {
+  .hero-badge {
+    position: absolute;
+    bottom: -26px;
+    left: -30px;
+    max-width: calc(100% + 20px);
+    margin: 0;
+    text-align: left;
+    padding: 10px 20px 10px 14px;
+    font-size: 1rem;
+  }
+}
+
+/* Teprve na širokých obrazovkách, kde je fotka dost velká, plné písmo –
+   v pásmu 720–1199 px by se slogan zalomil a samolepka by se změnila
+   v pruh přes celý spodek fotky. */
+@media (min-width: 1200px) {
+  .hero-badge {
+    padding: 12px 24px 12px 16px;
+    font-size: 1.1875rem;
+  }
+}
+
+/* Bez fotky: barevná plocha s kresbou. */
+.hero-art,
+.about-art {
+  display: grid;
+  aspect-ratio: 3 / 4;
+  place-items: center;
+  background: linear-gradient(160deg, var(--tint-blue), var(--tint-pink));
+}
+
+.illustration {
+  width: 82%;
+  height: auto;
+}
+
+.art-pink {
+  fill: var(--pink);
+}
+
+.art-sun {
+  fill: var(--sun);
+}
+
+.art-blue {
+  fill: var(--blue);
+}
+
+.art-green {
+  fill: var(--green);
+}
+
+.art-white {
+  fill: var(--ico-w);
+}
+
+.art-line {
+  stroke: var(--on-accent);
+}
+
+@media (min-width: 960px) {
+  .hero {
+    padding-block: 64px 112px;
+  }
+
+  .hero-grid {
+    grid-template-columns: minmax(0, 1.18fr) minmax(0, 0.82fr);
+    gap: 72px;
+  }
+
+  .hero-frame::after {
+    top: -46px;
+    right: -42px;
+    width: 140px;
+    height: 140px;
+  }
+}
+
+/* ---- služby: bento mřížka barevných dlaždic ----
+   Dlaždice má vždy tónované pozadí a obrys v barvě své ikony. Celá dlaždice
+   je odkaz na Kontakt; po najetí myší nebo při fokusu jemně zesílí (o stupeň
+   výraznější tón, silnější obrys, nadzvednutí) – nevyplní se celou sytou
+   barvou (na dotykových zařízeních zůstává klidový obrys a tón). */
+
+.services {
+  display: grid;
+  grid-auto-flow: row dense;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.svc {
+  display: flex;
+  min-width: 0;
+}
+
+.service {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  width: 100%;
+  padding: 16px;
+  border: 2px solid var(--acc-edge);
+  border-radius: var(--radius);
+  background: var(--acc-tint);
+  color: var(--ink);
+  text-decoration: none;
+  box-shadow: inset 0 1px 0 var(--card-hi);
+}
+
+.service:hover {
+  color: var(--ink);
+}
+
+.service h3 {
+  margin: 0 0 4px;
+  color: inherit;
+  font-size: 1.125rem;
+}
+
+.service p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+.service-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.service-icon {
+  display: block;
+  flex: none;
+}
+
+.service-svg {
+  display: block;
+  width: 46px;
+  height: 46px;
+  border-radius: 29%;
+  color: var(--on-accent);
+}
+
+.ico-tile {
+  fill: var(--acc);
+}
+
+.ico-w {
+  fill: var(--ico-w);
+}
+
+.ico-x {
+  fill: var(--acc-x);
+}
+
+.ico-pink {
+  fill: var(--pink);
+}
+
+.ico-sun {
+  fill: var(--sun);
+}
+
+.ico-blue {
+  fill: var(--blue);
+}
+
+.ico-green {
+  fill: var(--green);
+}
+
+/* Šipka „domluvit termín“. */
+.service-go {
+  display: grid;
+  flex: none;
+  align-self: center;
+  width: 36px;
+  height: 36px;
+  place-items: center;
+  border: 2px solid var(--acc-edge);
+  border-radius: 50%;
+  color: var(--ink);
+}
+
+.service-go .ui-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
+}
+
+/* Zvýrazněná dlaždice: po najetí myší (jen zařízení s myší) a při fokusu
+   z klávesnice. Jemně: o stupeň výraznější tón vlastní barvy, zesílený obrys
+   (obrys + prstenec stínem, bez posunu obsahu), stín v barvě a šipka vyplněná
+   sytou barvou. Text je celý v barvě --ink (kontrast aspoň 7 : 1, hlídá test).
+   Nadzvednutí o 2 px jen bez omezení pohybu (prefers-reduced-motion). */
+.service:focus-visible {
+  border-color: var(--acc-edge);
+  background: var(--acc-tint-hover);
+  color: var(--ink);
+  box-shadow: inset 0 1px 0 var(--card-hi), 0 0 0 2px var(--acc-edge), 0 18px 40px -22px var(--acc);
+}
+
+.service:focus-visible p {
+  color: var(--ink);
+}
+
+.service:focus-visible .service-go {
+  border-color: var(--acc);
+  background: var(--acc);
+  color: var(--on-accent);
+}
+
+@media (hover: hover) {
+  .service:hover {
+    border-color: var(--acc-edge);
+    background: var(--acc-tint-hover);
+    color: var(--ink);
+    box-shadow: inset 0 1px 0 var(--card-hi), 0 0 0 2px var(--acc-edge), 0 18px 40px -22px var(--acc);
+  }
+
+  .service:hover p {
+    color: var(--ink);
+  }
+
+  .service:hover .service-go {
+    border-color: var(--acc);
+    background: var(--acc);
+    color: var(--on-accent);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .service:focus-visible {
+    transform: translateY(-2px);
+  }
+}
+
+@media (hover: hover) and (prefers-reduced-motion: no-preference) {
+  .service:hover {
+    transform: translateY(-2px);
+  }
+}
+
+/* Velká dlaždice s fotkou: fotka celá (na výšku, nic přes ni), text pod ní
+   nebo vedle ní. */
+.svc-big .service {
+  display: grid;
+  gap: 16px;
+  align-items: center;
+  padding: 12px;
+}
+
+.service-photo {
+  display: block;
+  justify-self: center;
+  width: 100%;
+  max-width: 340px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--card);
+}
+
+.service-photo .photo {
+  width: 100%;
+}
+
+.service-main {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 4px 8px 8px;
+}
+
+.svc-big .service h3 {
+  font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem);
+  line-height: 1.1;
+}
+
+.svc-big .service p {
+  margin-top: 8px;
+  font-size: 1rem;
+}
+
+.svc-big .service-go {
+  align-self: flex-start;
+  width: 44px;
+  height: 44px;
+}
+
+@media (min-width: 600px) {
+  .services {
+    gap: 16px;
+  }
+
+  .service {
+    display: block;
+    padding: 22px;
+  }
+
+  .service h3 {
+    margin-bottom: 6px;
+    padding-right: 40px;
+    font-size: 1.1875rem;
+  }
+
+  .service p {
+    font-size: 0.9375rem;
+    line-height: 1.55;
+  }
+
+  .service-svg {
+    width: 60px;
+    height: 60px;
+  }
+
+  .service > .service-icon {
+    margin-bottom: 18px;
+  }
+
+  .service > .service-go {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+  }
+
+  .svc-big .service {
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    gap: 24px;
+    padding: 14px;
+  }
+
+  .svc-big .service h3 {
+    padding-right: 0;
+  }
+}
+
+/* Poslední dlaždice se roztáhne přes zbytek řádku (počet sloupců spočítá
+   render.mjs: třída wN-K = v mřížce o N sloupcích přes K sloupců) a má ikonu
+   vedle textu. */
+@media (min-width: 600px) and (max-width: 899px) {
+  .services {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .svc-big {
+    grid-column: span 2;
+  }
+
+  .w2-2 {
+    grid-column: span 2;
+  }
+
+  .w2-2 .service {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+  }
+}
+
+@media (min-width: 900px) and (max-width: 1179px) {
+  .services {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .svc-big {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .w3-2,
+  .w3-3 {
+    grid-column: span 2;
+  }
+
+  .w3-3 {
+    grid-column: span 3;
+  }
+
+  .w3-2 .service,
+  .w3-3 .service {
+    display: flex;
+    gap: 22px;
+    align-items: center;
+  }
+}
+
+@media (min-width: 1180px) {
+  .services {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .svc-big {
+    grid-column: span 2;
+    grid-row: span 2;
+  }
+
+  .w4-2 {
+    grid-column: span 2;
+  }
+
+  .w4-3 {
+    grid-column: span 3;
+  }
+
+  .w4-4 {
+    grid-column: span 4;
+  }
+
+  .w4-2 .service,
+  .w4-3 .service,
+  .w4-4 .service {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+}
+
+.svc-wide .service > .service-icon {
+  margin-bottom: 0;
+}
+
+.svc-wide .service > .service-go {
+  position: static;
+}
+
+.svc-wide .service h3 {
+  padding-right: 0;
+}
+
+/* ---- o mně ---- */
+
+.about-grid {
+  display: grid;
+  gap: 48px;
+  align-items: start;
+}
+
+.about-media {
+  justify-self: center;
+  width: min(100%, 380px);
+}
+
+.about-frame::before {
+  inset: 26px 26px -14px -14px;
+  background: linear-gradient(135deg, var(--pink), var(--blue));
+}
+
+.about-text > p {
+  max-width: 35em;
+  margin: 0 0 var(--space-s);
+  color: var(--muted);
+}
+
+.traits {
+  max-width: 40em;
+  margin-top: var(--space-l);
+  padding: 24px;
+  border: 2px solid var(--edge-pink);
+  border-radius: var(--radius);
+  background: var(--card);
+  box-shadow: inset 0 1px 0 var(--card-hi), 0 26px 60px -40px var(--pink);
+}
+
+.traits h3 {
+  margin: 0 0 16px;
+}
+
+.check-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.check-list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.check-icon {
+  display: grid;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  margin-top: -1px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--acc);
+  color: var(--on-accent);
+}
+
+.check-icon .ui-icon {
+  width: 17px;
+  height: 17px;
+  stroke-width: 3;
+}
+
+/* Závěrečná věta: výrazná mezera nad ní (nesmí být nalepená na rámeček
+   vlastností), hvězdička odsazená od textu a zarovnaná na první řádek. */
+.about-text > .about-outro {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  max-width: 30em;
+  margin: var(--space-xl) 0 0;
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.about-outro .ui-icon {
+  width: 26px;
+  height: 26px;
+  margin-top: calc((1.3em - 26px) / 2);
+  color: var(--brand);
+  fill: var(--pink);
+}
+
+@media (min-width: 960px) {
+  .about-grid {
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    gap: 80px;
+  }
+
+  .about-media {
+    position: sticky;
+    top: calc(var(--header-h) + 40px);
+  }
+}
+
+/* ---- reference: každá karta ve své barvě (obrys + tónované pozadí) ---- */
+
+.refs {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ref-item {
+  display: flex;
+}
+
+.ref {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  width: 100%;
+  margin: 0;
+  padding: 28px;
+  border: 2px solid var(--acc-edge);
+  border-radius: var(--radius);
+  background: var(--acc-tint);
+  box-shadow: inset 0 1px 0 var(--card-hi), 0 26px 60px -36px var(--acc);
+}
+
+.ref-mark {
+  color: var(--acc-edge);
+}
+
+.quote-svg {
+  display: block;
+  width: 42px;
+  height: 32px;
+}
+
+.ref blockquote {
+  flex: 1;
+  margin: 0;
+}
+
+.ref blockquote p {
+  margin: 0;
+  color: var(--ink);
+}
+
+.ref figcaption {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.ref-avatar {
+  display: grid;
+  flex: none;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--acc);
+  color: var(--on-accent);
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  font-weight: 800;
+}
+
+.ref-who {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.35;
+}
+
+.ref-who span {
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.refs-note {
+  max-width: 44em;
+  margin: var(--space-m) 0 0;
+  color: var(--muted);
+  font-size: 0.8125rem;
+}
+
+@media (min-width: 760px) {
+  .refs {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1100px) {
+  .refs {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* ---- kontakt ---- */
+
+.contact-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.contact-card,
+.contact-fb {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--radius-lg);
+  background-color: var(--card);
+}
+
+.contact-card {
+  padding: 36px 20px 28px;
+  border: 2px solid var(--edge-green);
+  background-image:
+    radial-gradient(34rem 22rem at 100% 0%, var(--glow-green), transparent 70%),
+    radial-gradient(30rem 20rem at 0% 100%, var(--glow-blue), transparent 70%);
+  box-shadow: inset 0 1px 0 var(--card-hi), 0 40px 90px -50px var(--green);
+}
+
+.contact-card::after {
+  content: "";
+  position: absolute;
+  top: -26px;
+  right: -20px;
+  width: 140px;
+  height: 140px;
+  background: var(--confetti) no-repeat center / contain;
+}
+
+.contact-card .section-head {
+  position: relative;
+  z-index: 1;
+  max-width: 40em;
+  margin-bottom: 28px;
+}
+
+.contact-actions {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* Tlačítko s číslem / e-mailem a vedle něj „Kopírovat“ (jen s JavaScriptem). */
+.contact-item {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 16px;
+  border: 1px solid var(--control-line);
+  border-radius: 999px;
+  background: var(--card);
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.copy-btn:hover {
+  border-color: var(--ink);
+}
+
+.copy-btn .ui-icon {
+  width: 18px;
+  height: 18px;
+}
+
+.copy-status {
+  min-height: 1.5em;
+  margin: 10px 0 0;
+  color: var(--muted);
+  font-size: 0.9375rem;
+  font-weight: 700;
+}
+
+.contact-address {
+  display: flex;
+  gap: 10px;
+  margin: var(--space-s) 0 0;
+  color: var(--muted);
+  font-style: normal;
+}
+
+.contact-address .ui-icon {
+  margin-top: 3px;
+  color: var(--brand);
+}
+
+.contact-address strong {
+  color: var(--ink);
+}
+
+/* Karta Facebooku: logo, nadpis a text nahoře, pilulkové tlačítko dole
+   (margin-top: auto) – na počítači stejně vysoká jako karta Kontakt a tlačítko
+   končí ve stejné výšce jako adresa (stejný spodní okraj obou karet). */
+.contact-fb {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+  justify-content: flex-start;
+  padding: 28px 22px;
+  border: 2px solid var(--fb-blue);
+  background-image: radial-gradient(28rem 22rem at 100% 0%, var(--glow-fb), transparent 70%);
+  box-shadow: inset 0 1px 0 var(--card-hi), 0 40px 90px -50px var(--fb-blue);
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.contact-fb:hover {
+  color: var(--ink);
+}
+
+.fb-logo {
+  display: block;
+  width: 56px;
+  height: 56px;
+}
+
+.fb-logo-bg {
+  fill: var(--fb-blue);
+}
+
+.fb-logo-f {
+  fill: var(--fb-ink);
+}
+
+.contact-fb-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.contact-fb-label {
+  font-family: var(--font-display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1.1;
+}
+
+.contact-fb-text {
+  color: var(--muted);
+}
+
+.contact-fb-cta {
+  display: inline-flex;
+  margin-top: auto;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  padding: 10px 22px;
+  border-radius: 999px;
+  background: var(--fb-btn);
+  color: var(--fb-ink);
+  font-weight: 800;
+}
+
+.contact-fb:hover .contact-fb-cta {
+  background: var(--fb-blue);
+}
+
+/* Vějíř až tří Ivoniných fotek mezi textem a tlačítkem: zaoblené náhledy
+   s bílým (v tmavém motivu tmavým) rámečkem, mírně natočené a přes sebe.
+   Volné místo karty se dělí nad a pod vějíř (margin-block: auto), tlačítko
+   pak zůstává dole. Jako všude na webu jsou fotky celé (bez ořezu, v
+   přirozeném poměru stran), takže žádná hlava není useknutá. */
+.contact-fb-gallery {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  align-self: stretch;
+  margin-block: 4px;
+}
+
+.contact-fb-gallery + .contact-fb-cta {
+  margin-top: 0;
+}
+
+.fb-shots {
+  display: flex;
+  justify-content: center;
+  padding: 6px 10px;
+}
+
+.fb-shot {
+  position: relative;
+  flex: 0 0 auto;
+  width: 88px;
+  overflow: hidden;
+  border: 4px solid var(--card);
+  border-radius: 18px;
+  background: var(--card);
+  box-shadow: 0 14px 28px -14px var(--shadow-color), 0 0 0 1px var(--glow-fb);
+  transform: rotate(-6deg);
+}
+
+.fb-shot + .fb-shot {
+  margin-left: -14px;
+}
+
+.fb-shot:nth-child(2) {
+  z-index: 1;
+  transform: translateY(-6px) rotate(3deg);
+}
+
+.fb-shot:nth-child(3) {
+  transform: rotate(-2deg);
+}
+
+.fb-shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 13px;
+}
+
+.fb-shots-caption {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.fb-shots-caption::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--fb-blue);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .fb-shot {
+    transition: transform 0.25s ease;
+  }
+
+  .contact-fb:hover .fb-shot:nth-child(1) {
+    transform: translateX(-6px) rotate(-9deg);
+  }
+
+  .contact-fb:hover .fb-shot:nth-child(2) {
+    transform: translateY(-10px) rotate(2deg);
+  }
+
+  .contact-fb:hover .fb-shot:nth-child(3) {
+    transform: translateX(6px) rotate(1deg);
+  }
+}
+
+.contact-fb-cta .ui-icon {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2.5;
+}
+
+@media (min-width: 720px) {
+  .contact-card {
+    padding: 56px 52px 44px;
+  }
+
+  .contact-fb {
+    padding: 36px 32px;
+  }
+}
+
+@media (min-width: 1000px) {
+  .contact-grid {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+    align-items: stretch;
+  }
+
+  .contact-solo {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .contact-fb {
+    padding: 56px 36px 44px;
+  }
+
+  /* Na počítači je karta stejně vysoká jako Kontakt: vějíř větší (náhledy
+     nejvýš ~140 px, fotky jsou malé), uprostřed volného místa a tlačítko
+     přes celou šířku karty, aby spodek karty nebyl prázdný. */
+  .contact-fb-gallery {
+    margin-block: auto;
+  }
+
+  .fb-shot {
+    width: 108px;
+  }
+
+  .fb-shot + .fb-shot {
+    margin-left: -18px;
+  }
+
+  .contact-fb-cta {
+    align-self: stretch;
+    justify-content: center;
+  }
+}
+
+/* ---- 404 ---- */
+
+.not-found-card {
+  position: relative;
+  max-width: 760px;
+  margin: 0 auto;
+  padding: 48px 20px;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  background-color: var(--card);
+  background-image:
+    radial-gradient(30rem 20rem at 100% 0%, var(--glow-pink), transparent 70%),
+    radial-gradient(28rem 20rem at 0% 100%, var(--glow-blue), transparent 70%);
+  text-align: center;
+}
+
+.nf-digits {
+  display: flex;
+  justify-content: center;
+  gap: 0.12em;
+  margin: 0 0 28px;
+  font-family: var(--font-display);
+  font-size: clamp(4.5rem, 3rem + 7vw, 8rem);
+  font-weight: 800;
+  line-height: 1;
+}
+
+/* Číslice na celé barevné dlaždici, opticky na středu (Baloo má vysoký
+   horní okraj řádku, proto víc místa nahoře). */
+.nf-tile {
+  display: grid;
+  width: 1.05em;
+  height: 1.15em;
+  padding-top: 0.14em;
+  place-items: center;
+  border-radius: 0.22em;
+  background: var(--acc);
+  color: var(--on-accent);
+}
+
+.not-found .lead {
+  margin-inline: auto;
+}
+
+.not-found .cta {
+  justify-content: center;
+}
+
+/* ---- ochrana soukromí (dlouhý text, nejvýš ~70 znaků na řádek) ---- */
+
+.legal-inner {
+  max-width: 860px;
+}
+
+.legal h1 {
+  font-size: clamp(2.3rem, 1.6rem + 2.8vw, 3.8rem);
+}
+
+.legal-card {
+  padding: 28px 20px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--card);
+  box-shadow: inset 0 1px 0 var(--card-hi);
+}
+
+.legal-block {
+  max-width: 33em;
+}
+
+.legal-block + .legal-block {
+  margin-top: 44px;
+}
+
+.legal-block h2 {
+  margin-bottom: 14px;
+  font-size: clamp(1.6rem, 1.3rem + 1vw, 2rem);
+}
+
+.legal-block h3 {
+  margin: 26px 0 8px;
+  font-size: 1.15rem;
+}
+
+.legal-block p,
+.legal-list {
+  margin: 0 0 14px;
+}
+
+.legal-list {
+  padding-left: 1.3em;
+}
+
+.legal-list li + li {
+  margin-top: 6px;
+}
+
+.legal-facts {
+  margin: 0;
+}
+
+.legal-facts div {
+  display: grid;
+  gap: 2px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.legal-facts dt {
+  color: var(--muted);
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.legal-facts dd {
+  margin: 0;
+}
+
+.legal-updated {
+  margin: 40px 0 0;
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+@media (min-width: 720px) {
+  .legal-card {
+    padding: 48px 56px;
+  }
+
+  .legal-facts div {
+    grid-template-columns: 9rem minmax(0, 1fr);
+    gap: 16px;
+  }
+}
+
+/* ------------------------------------------------------------------------
+   Patička
+   ------------------------------------------------------------------------ */
+
+.site-footer {
+  padding: 56px 0 36px;
+  border-top: 1px solid var(--line);
+  background: var(--bg-alt);
+  color: var(--muted);
+  font-size: 0.9375rem;
+}
+
+.footer-grid {
+  display: grid;
+  gap: 28px;
+}
+
+.footer-logo {
+  margin: 0;
+}
+
+.footer-logo .logo-mark {
+  display: block;
+}
+
+.footer-contact {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.footer-contact a {
+  display: inline-flex;
+  gap: 10px;
+  align-items: center;
+  color: var(--ink);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer-contact a:hover {
+  color: var(--brand);
+}
+
+.footer-contact .ui-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--brand);
+}
+
+.footer-meta p {
+  margin: 0 0 8px;
+}
+
+.footer-legal a {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.footer-legal a:hover {
+  color: var(--brand);
+}
+
+.footer-top-row {
+  margin: 0;
+}
+
+.footer-top {
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+  min-height: 44px;
+  padding: 10px 18px;
+  border: 1px solid var(--control-line);
+  border-radius: 999px;
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.footer-top:hover {
+  border-color: var(--ink);
+  color: var(--ink);
+}
+
+.footer-top .ui-icon {
+  width: 18px;
+  height: 18px;
+}
+
+@media (min-width: 900px) {
+  .footer-grid {
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1.5fr) auto;
+    gap: 40px;
+    align-items: start;
+  }
+}
+
+/* ------------------------------------------------------------------------
+   Tisk: vždy světle, bez dekorací, text černý.
+   ------------------------------------------------------------------------ */
+
+@media print {
+  .header-actions,
+  .nav-wide,
+  .footer-top-row,
+  .skip-link,
+  .copy-btn,
+  .service-go,
+  .hero-frame::before,
+  .hero-frame::after,
+  .about-frame::before,
+  .contact-card::after,
+  .contact-fb-gallery {
+    display: none !important;
+  }
+
+  body,
+  .site-header,
+  .site-footer,
+  .section,
+  .hero,
+  .photo-card,
+  .hero-badge,
+  .hero-note,
+  .service,
+  .traits,
+  .ref,
+  .contact-card,
+  .contact-fb,
+  .contact-fb-cta,
+  .legal-card,
+  .not-found-card,
+  .kicker {
+    background: none !important;
+    box-shadow: none !important;
+  }
+
+  .site-header {
+    position: static;
+    border-bottom: 1px solid var(--line);
+    border-image: none;
+  }
+
+  body,
+  h1,
+  h2,
+  h3,
+  .site-footer,
+  .site-footer a,
+  .logo-sub,
+  .lead,
+  .section-intro,
+  .service,
+  .service p,
+  .svc-big p,
+  .about-text > p,
+  .ref-who span,
+  .contact-address,
+  .contact-address .ui-icon,
+  .contact-fb,
+  .contact-fb-text,
+  .contact-fb-cta,
+  .btn,
+  .kicker,
+  .legal-block a {
+    color: var(--print-ink) !important;
+  }
+
+  .btn,
+  .service,
+  .ref {
+    border-color: var(--print-ink);
+  }
+}

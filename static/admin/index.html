@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="cs">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <meta name="referrer" content="no-referrer">
+  <title>Administrace webu – Zábava pro děti</title>
+  <link rel="icon" href="data:,">
+  <link rel="cms-config-url" type="text/yaml" href="/admin/config.yml">
+</head>
+<body>
+  <noscript>Administrace webu potřebuje zapnutý JavaScript. Zapněte ho prosím v prohlížeči a stránku načtěte znovu.</noscript>
+  <p id="nacitani">Načítám administraci… Pokud se nenačte do minuty, obnovte stránku (Ctrl+F5). Když to nepomůže, ozvěte se Claudovi – administrace se bez bezpečnostní pojistky záměrně nespustí.</p>
+  <!-- Pořadí je důležité: manual-init.js zakáže Decapu samostatný start, administraci spustí až
+       pojistka publish-guard.js (CMS.init) po zaregistrování kontrol. Bez pojistky se nespustí. -->
+  <script src="/admin/manual-init.js" integrity="sha384-IAdZljzZ32mIJvHd8w9tmlyJOpL6MWUX7xTVLSZsH4swJWVZ9hgh5xqfgLC+W6sz"></script>
+  <script src="/admin/decap-cms.js" integrity="sha384-RWRzuHfiZSWCt3nEvG7B0v3cMgM1C2UuJmgBSL92GQh4uXmNSkbcthql/mNBqvjr"></script>
+  <!-- Naše pojistka: zastaví zveřejnění návrhu, který mění něco jiného než text stránky a nové fotky (viz soubor). -->
+  <script src="/admin/publish-guard.js" integrity="sha384-AEATynBlfLPSLa2TQ99pul+ZfS9Pdd+3mw9xtNp0Upuw7aCinJEG7I4AebwFAoL6"></script>
+</body>
+</html>

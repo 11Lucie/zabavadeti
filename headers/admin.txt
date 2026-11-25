@@ -1,0 +1,55 @@
+# ---------------------------------------------------------------------------
+# Administrace (Decap CMS) a OAuth proxy – pravidla se v buildu připojí ZA headers/site.txt.
+# Cloudflare Pages hlavičky ze všech pasujících pravidel SLUČUJE, proto každé pravidlo nejdřív
+# odpojí ("! Název") hlavičky zděděné z /* a teprve potom nastaví vlastní.
+# Zdůvodnění každé výjimky v CSP: docs/VENDOR.md, oddíl "CSP administrace".
+# Pozor: _headers se NEUPLATŇUJÍ na odpovědi Pages Functions (/api/auth, /api/callback);
+# ty si hlavičky nastavují samy v lib/oauth.js. Pravidlo /api/* níže kryje jen statické
+# odpovědi (např. 404 pro neexistující adresu pod /api/).
+# ---------------------------------------------------------------------------
+
+/admin/*
+  ! Content-Security-Policy
+  ! Content-Security-Policy-Report-Only
+  ! Cross-Origin-Opener-Policy
+  ! Cross-Origin-Embedder-Policy
+  ! X-Frame-Options
+  ! X-Robots-Tag
+  ! Referrer-Policy
+  ! X-Content-Type-Options
+  Content-Security-Policy: default-src 'none'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://avatars.githubusercontent.com; connect-src 'self' blob: https://api.github.com; frame-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'
+  Cross-Origin-Opener-Policy: same-origin-allow-popups
+  X-Frame-Options: DENY
+  X-Robots-Tag: noindex, nofollow
+  Referrer-Policy: no-referrer
+  X-Content-Type-Options: nosniff
+
+/admin/
+  ! Cache-Control
+  Cache-Control: no-store
+
+/admin/index.html
+  ! Cache-Control
+  Cache-Control: no-store
+
+/admin/config.yml
+  ! Cache-Control
+  Cache-Control: no-store
+
+/admin/decap-cms.js
+  ! Cache-Control
+  Cache-Control: no-cache
+
+/admin/publish-guard.js
+  ! Cache-Control
+  Cache-Control: no-cache
+
+/admin/manual-init.js
+  ! Cache-Control
+  Cache-Control: no-cache
+
+/api/*
+  ! Cache-Control
+  ! X-Robots-Tag
+  Cache-Control: no-store
+  X-Robots-Tag: noindex, nofollow

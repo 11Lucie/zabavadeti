@@ -1,0 +1,41 @@
+# Bezpečnostní hlavičky veřejného webu (formát Cloudflare Pages _headers).
+# Build z tohoto souboru (a za ním z headers/admin.txt) složí dist/_headers.
+# Pozor: když na adresu sedí víc pravidel, Cloudflare hlavičky spojí čárkou.
+# Pravidlo, které hlavičku mění, ji proto musí nejdřív odpojit: "! Název".
+# HSTS: stejná hodnota jako v Cloudflare (SSL/TLS → Edge Certificates → HSTS, NAVOD krok 5),
+# aby www nedostala dvě různé hlavičky. Při změně upravit obojí (a lib/oauth.js, HSTS).
+
+/*
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(), browsing-topics=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), hid=(), idle-detection=(), magnetometer=(), microphone=(), midi=(), payment=(), picture-in-picture=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), xr-spatial-tracking=()
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-origin
+  X-Permitted-Cross-Domain-Policies: none
+
+# Dlouhou cache pro /assets/styles.<otisk>.css, /assets/theme.<otisk>.js a designové soubory
+# ze src/assets (/assets/<název>.<otisk>.svg|woff2 – písma a konfety) přidává build
+# (build.mjs) přesně pro aktuální soubory – ne /assets/*, aby se na rok neuložila ani
+# stránka 404 pro neexistující adresu pod /assets/.
+
+# Nahrané fotky: i kdyby se sem dostal podvržený soubor, prohlížeč ho
+# nespustí (sandbox, žádné skripty ani styly). X-Content-Type-Options: nosniff
+# se dědí z pravidla /*.
+/uploads/*
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'none'; sandbox
+
+# Ikona webu je SVG – otevřená samostatně je to dokument, proto stejný sandbox.
+# (Designová SVG v /assets/ dostávají totéž pravidlo od buildu.)
+/favicon.svg
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'none'; sandbox
+
+# Náhledové adresy Cloudflare Pages (*.pages.dev) nemají být ve vyhledávačích.
+https://:project.pages.dev/*
+  X-Robots-Tag: noindex
+https://:version.:project.pages.dev/*
+  X-Robots-Tag: noindex

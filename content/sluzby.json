@@ -1,0 +1,58 @@
+{
+  "nadpis": "Co vám mohu nabídnout",
+  "uvod": "Zajišťuji zábavné programy pro děti na narozeninové oslavy, svatby, školní akce i veřejné události v Měříně a okolí. Každý program připravuji na míru podle věku dětí a typu akce – s důrazem na radost, bezpečí a nezapomenutelné zážitky.",
+  "polozky": [
+    {
+      "nazev": "Malování na obličej",
+      "popis": "Barevné malování na obličej, díky kterému se z dětí během chvilky stanou princezny, zvířátka nebo pohádkoví hrdinové.",
+      "ikona": "oblicej"
+    },
+    {
+      "nazev": "Třpytivé dětské tetování",
+      "popis": "Třpytivé tetování, jehož motiv si každé dítě může vybrat samo. Malá ozdoba, která udělá velkou radost.",
+      "ikona": "tetovani"
+    },
+    {
+      "nazev": "Pletení barevných copánků",
+      "popis": "Barevné copánky jako veselá ozdoba do vlasů, ze které mají radost hlavně holčičky.",
+      "ikona": "copanky"
+    },
+    {
+      "nazev": "Kreativní dílničky",
+      "popis": "Tvořivé dílničky, při kterých děti vyrábějí, malují a rozvíjejí svou fantazii.",
+      "ikona": "tvoreni"
+    },
+    {
+      "nazev": "Sportovní aktivity a hry",
+      "popis": "Soutěže, pohybové i týmové hry a tanec – aby se děti pořádně vyřádily a zasmály.",
+      "ikona": "sport"
+    },
+    {
+      "nazev": "Pronájem skákacích hradů",
+      "popis": "Největší hit každé oslavy! Skákací hrad je pro děti třešničkou na dortu.",
+      "ikona": "hrad"
+    },
+    {
+      "nazev": "Půjčovna karnevalových kostýmů",
+      "popis": "Nabízím vypůjčení karnevalových kostýmů pro děti i dospělé. Kostýmy jsou kvalitní, výrazné a připravené na pořádnou dávku zábavy!",
+      "ikona": "kostymy"
+    },
+    {
+      "nazev": "Maskoti na vaši akci",
+      "popis": "Na akce přivádím profesionální maskoty – oblíbené postavičky jako Mickey Mouse, Minnie, Stitch, Mimoni a další.",
+      "ikona": "maskoti",
+      "fotka": "/uploads/mickey-a-minnie.jpg",
+      "fotka_popis": "Maskoti Mickey a Minnie na akci"
+    },
+    {
+      "nazev": "Programy pro mateřské školy",
+      "popis": "Zábavné programy pro školky, které kombinují kreativitu, pohyb a radost.",
+      "ikona": "skolka"
+    },
+    {
+      "nazev": "Oslavy a akce na míru",
+      "popis": "Narozeninové oslavy, svatby, firemní, školní i veřejné akce. Program přizpůsobím věku a počtu dětí i typu akce.",
+      "ikona": "oslava"
+    }
+  ]
+}
