@@ -51,10 +51,10 @@ stačí mu to říct. Hesla, kódy a platební údaje ale vždycky zadáváte je
 
 | Krok | Co | Stav |
 |---|---|---|
-| 1 | GitHub: účet, repozitář, přihlašovací aplikace | ✔ hotovo 25. 11. 2026 |
+| 1 | GitHub: účet, repozitář, přihlašovací aplikace (GitHub App) | ✔ hotovo 25. 11. 2026; 26. 11. 2026 přechod na GitHub App, OAuth App smazána |
 | 2 | Nahrání projektu na GitHub | |
 | 3 | Pravidla pro hlavní větev (ruleset) | |
-| 4 | Cloudflare Pages a proměnné (vč. client secret) | |
+| 4 | Cloudflare Pages a proměnné (vč. client secret) | client secret GitHub App v Cloudflare od 26. 11. 2026 |
 | 5 | Doména do Cloudflare (web se zatím nemění) | |
 | 6 | Cloudflare Access na administraci | |
 | 7 | Přepnutí domény na nový web | |
@@ -79,12 +79,57 @@ Hotové (není potřeba nic dělat, jen pro přehled):
   soukromě (odkaz je v souboru `security.txt` na webu).
 - ✔ **Secret protection** a **Push protection** jsou zapnuté: GitHub zastaví nahrání omylem
   vloženého hesla či klíče.
-- ✔ **Přihlašovací aplikace (OAuth App)** pro administraci je vytvořená
-  (**Settings** → **Developer settings** → **OAuth Apps**):
-  - callback URL přesně `https://www.zabavadeti.cz/api/callback` (jediná), wildcard matching vypnutý,
-  - **Enable Device Flow** vypnuté,
-  - **Expire user access tokens** zapnuté: přihlášení do administrace platí nejvýš 8 hodin.
-  - **Client secret zatím neexistuje.** Vygenerujete ho až v kroku 4, rovnou do Cloudflare.
+- ✔ **Přihlašovací aplikace (GitHub App) `zabavadeti-administrace`** pro administraci je vytvořená
+  a nainstalovaná jen na repozitář `11Lucie/zabavadeti` (26. 11. 2026). Nahradila dřívější
+  „OAuth App“, která je **smazaná**. Nastavení je popsané níže v postupu „Kdyby bylo potřeba
+  přihlašovací aplikaci založit znovu“. Client secret je jen v Cloudflare (krok 4).
+
+**Proč GitHub App:** přihlášení do administrace uloží v prohlížeči klíč (token). Token z GitHub App
+umí zapisovat **jen do repozitáře `11Lucie/zabavadeti`**: do jeho souborů (texty, fotky, ale i kód
+webu) a do návrhů (pull requestů).
+Nastavení repozitáře, pravidla, spolupracovníky ani jiné vaše repozitáře měnit neumí. Dřívější
+OAuth App dávala token, který uměl zapisovat do **všech** vašich veřejných repozitářů.
+
+**Kdyby bylo potřeba přihlašovací aplikaci založit znovu** (teď není potřeba nic dělat):
+
+1. GitHub → ikona vpravo nahoře → **Settings** → **Developer settings** → **GitHub Apps** →
+   **New GitHub App**.
+2. Vyplňte:
+   - **GitHub App name:** `zabavadeti-administrace`,
+   - **Homepage URL:** `https://www.zabavadeti.cz`,
+   - **Callback URL:** přesně `https://www.zabavadeti.cz/api/callback`, **jediná** (další
+     nepřidávejte); volbu pro wildcard (permissive) matching nechte **vypnutou**,
+   - expiraci tokenů nechte **zapnutou** (zaškrtávátko **Expire user authorization tokens** pod
+     Callback URL; po vytvoření ji v **Optional features** uvidíte jako aktivní **User-to-server
+     token expiration**): přihlášení pak platí nejvýš 8 hodin,
+   - **Request user authorization (OAuth) during installation:** **vypnuté**,
+   - **Enable Device Flow:** **vypnuté**,
+   - **Setup URL:** prázdné,
+   - **Webhook** → **Active:** **vypnuté** (aplikace žádné zprávy od GitHubu nepotřebuje).
+3. **Permissions** → **Repository permissions** nastavte **jen** tyto tři:
+   - **Contents:** **Read and write** (ukládání textů a fotek),
+   - **Pull requests:** **Read and write** (návrhy),
+   - **Metadata:** **Read-only** (povinné, GitHub ho nastaví sám).
+
+   Všechno ostatní nechte **No access**: žádná **Account permissions** ani **Organization
+   permissions**, ani **Issues**. Žádné události (events) nezaškrtávejte.
+4. **Where can this GitHub App be installed?** → **Only on this account** (aplikace není veřejně
+   vidět a nikdo jiný si ji nenainstaluje). → **Create GitHub App**.
+5. **Privátní klíč (Key pairs):** GitHub ho vyžaduje, než jde aplikaci nainstalovat. Na stránce
+   aplikace záložka **Credentials** → **Key pairs** → **Generate a private key**. Prohlížeč stáhne soubor
+   `.pem`. **Soubor hned smažte (i z koše) a nikam ho neukládejte** – přihlašovací část webu ho
+   nepoužívá a nikdo ho nepotřebuje.
+6. **Client secret teď negenerujte.** Vygenerujte ho až v kroku 4 (bod 2), rovnou do Cloudflare.
+7. **Instalace jen na tento repozitář:** vlevo **Install App** → u účtu **11Lucie** **Install** →
+   **Only select repositories** → vyberte **`11Lucie/zabavadeti`** → **Install**.
+8. **Kontrola:** **Settings** → **Applications** → **Installed GitHub Apps** →
+   `zabavadeti-administrace` → **Configure**. **Repository access** musí být **Only select
+   repositories** a v seznamu jen `11Lucie/zabavadeti`. Oprávnění instalace: „Read access to
+   metadata; Read and write access to code and pull requests“ – nic jiného.
+9. **Když web už běží:** nová aplikace má nové Client ID i secret. Podle kroku 4 (body 1–4)
+   přepište v Cloudflare `GITHUB_CLIENT_ID` i `GITHUB_CLIENT_SECRET` na hodnoty nové aplikace →
+   **Retry deployment**. Starou aplikaci pak smažte. Při dalším přihlášení do administrace GitHub
+   každého (i Ivonu, pokud už upravuje) znovu požádá o **Authorize**.
 
 Zkontrolujte, jestli máte (pokud ne, udělejte teď):
 
@@ -204,16 +249,19 @@ důležitá i záloha mimo GitHub (část E).
 
 **Client secret a proměnné prostředí:**
 
-1. V druhé záložce otevřete na GitHubu **Settings** → **Developer settings** → **OAuth Apps** →
-   aplikace administrace. Opište **Client ID** (není tajný).
-2. Klikněte na **Generate a new client secret**. **Client secret je tajný**, GitHub ho ukáže jen
-   jednou. Zkopírujte ho **rovnou do Cloudflare** (bod 3) a nikam jinam: ne do e-mailu, souboru,
-   chatu ani Claudovi. Kdyby se ztratil, vygenerujte nový a starý smažte.
+1. V druhé záložce otevřete na GitHubu **Settings** → **Developer settings** → **GitHub Apps** →
+   `zabavadeti-administrace`. Na stránce **General** opište **Client ID** (není tajný; začíná `Iv`,
+   nepleťte si ho s číselným **App ID**).
+2. Záložka **Credentials** → **Client secrets** → **Generate a new client secret**. **Client secret
+   je tajný**, GitHub ho ukáže jen jednou. Zkopírujte ho **rovnou do Cloudflare** (bod 3) a nikam
+   jinam: ne do e-mailu, souboru, chatu ani Claudovi. Má existovat **jen jeden** secret, ten
+   v Cloudflare. Kdyby se ztratil, vygenerujte nový, vložte ho do Cloudflare a starý smažte
+   (poslední secret GitHub smazat nedovolí, dokud nevygenerujete nový).
 3. Cloudflare → projekt → **Settings** → **Variables and Secrets** → prostředí **Production** → **Add**:
 
    | Název | Hodnota | Typ |
    |---|---|---|
-   | `GITHUB_CLIENT_ID` | Client ID z bodu 1 | Text |
+   | `GITHUB_CLIENT_ID` | Client ID GitHub App z bodu 1 | Text |
    | `GITHUB_CLIENT_SECRET` | Client secret z bodu 2 | **Secret** (ve starším rozhraní tlačítko **Encrypt**) |
    | `ALLOWED_GITHUB_USERS` | `11Lucie` | Text |
    | `SKIP_DEPENDENCY_INSTALL` | `1` (už z průvodce; musí být v **Production i Preview**) | Text |
@@ -221,8 +269,8 @@ důležitá i záloha mimo GitHub (část E).
    | `ACCESS_AUD` | doplníte v kroku 6 | Text |
    | `CODE_HASH` | doplníte v kroku 8 | Text |
 
-   - Nic dalšího nepřidávejte. `OAUTH_SCOPE` **nevyplňujte** (výchozí `public_repo` je správně;
-     `repo` by administraci otevřel i případné soukromé repozitáře účtu). `ALLOWED_ORIGINS` také ne
+   - Nic dalšího nepřidávejte. `OAUTH_SCOPE` **nevyplňujte** (GitHub App ho stejně nebere v úvahu;
+     co přihlášení smí, určují oprávnění a instalace aplikace z kroku 1). `ALLOWED_ORIGINS` také ne
      (adresa `https://www.zabavadeti.cz` je přímo v kódu).
    - Do prostředí **Preview** tajné hodnoty **nedávejte**.
    - `ALLOWED_GITHUB_USERS` je **povinná**. Když chybí nebo v ní je překlep (e-mail místo jména,
@@ -521,6 +569,10 @@ Teď to není potřeba. Kdyby to Ivona chtěla:
 4. **Lucie** v Zero Trust: v policy aplikace `Administrace webu` přidat Ivonin e-mail (u aplikací
    pro `pages.dev` jen pokud chcete).
 5. Společně vyzkoušejte, že Ivona uloží návrh a vy ho vidíte ke schválení (část D, „Návrhy od Ivony“).
+   Při jejím prvním přihlášení do administrace se jí GitHub zeptá na povolení aplikace
+   `zabavadeti-administrace` → **Authorize**. Nic jiného Ivona na GitHubu nenastavuje: aplikaci
+   instalujete jen vy (krok 1) a její přihlášení má stejně jako vaše přístup jen k repozitáři
+   `11Lucie/zabavadeti`.
 
 Kdyby si Ivona změnila uživatelské jméno na GitHubu, je potřeba ho změnit i v `ALLOWED_GITHUB_USERS`.
 
@@ -530,8 +582,9 @@ Kdyby si Ivona změnila uživatelské jméno na GitHubu, je potřeba ho změnit 
    z `ALLOWED_GITHUB_USERS` nebo Access nestačí, už vydaný token GitHubu ještě až 8 hodin platí).
    Zkontrolujte, že tam není ani nevyřízená pozvánka.
 2. Pak ji odeberte z `ALLOWED_GITHUB_USERS` (→ **Retry deployment**) a z Access policy.
-3. Ivona si může na GitHubu v **Settings** → **Applications** → **Authorized OAuth Apps** u
-   aplikace administrace kliknout na **Revoke**.
+3. Ivona si může na GitHubu v **Settings** → **Applications** → **Authorized GitHub Apps** u
+   aplikace `zabavadeti-administrace` kliknout na **Revoke** (pod **Authorized OAuth Apps** ji
+   nehledejte, tam není).
 4. Při podezření na zneužití postupujte podle části F.
 
 ---
@@ -546,7 +599,8 @@ Teď podle této části upravuje web Lucie. Kdyby Ivona dostala účet (krok B1
 2. Objeví se okno Cloudflare. Napište svůj e-mail a nechte si poslat kód.
 3. Do e-mailu přijde **šestimístný kód (PIN)**. Opište ho. Platí jen chvíli.
 4. Klikněte na **Přihlásit pomocí GitHub**. V okně GitHubu: jméno, heslo a **kód z mobilu** (2FA).
-   Napoprvé GitHub požádá o povolení pro aplikaci administrace → **Authorize**.
+   Napoprvé GitHub požádá o povolení pro aplikaci `zabavadeti-administrace` → **Authorize**.
+   Okno GitHubu jen ověří, kdo jste; žádost o přístup k „Public repositories“ se neobjeví.
 5. Hláška „Přihlášení nejde spustit z jiné stránky“: zavřete okno a klikněte na přihlášení ještě
    jednou (stává se to po vypršení přihlášení k Cloudflare).
 6. **Přihlášení platí nejvýš 8 hodin.** Když administrace po delší době začne hlásit chyby při
@@ -735,13 +789,25 @@ a polohu, část C).
   žádná nevyřízená pozvánka.
 - **Rules** → **Rulesets**: pravidlo **Active**, v **Bypass list** jen **Repository admin**,
   v „Require a pull request“ všechny čtyři volby z kroku B3.
-- **Deploy keys**, **Webhooks**, **GitHub Apps** (**Integrations**): nic neznámého (Cloudflare jen
-  s přístupem k tomuto repozitáři); **Actions** pořád vypnuté.
+- **Deploy keys**, **Webhooks**, **GitHub Apps** (**Integrations**): nic neznámého (jen Cloudflare
+  a `zabavadeti-administrace`, obě s přístupem jen k tomuto repozitáři); **Actions** pořád vypnuté.
 - Vaše **Settings** → **SSH and GPG keys**, **Developer settings** → **Personal access tokens**,
-  **Applications** (**Authorized OAuth Apps** i **Authorized GitHub Apps**): znáte všechno?
-- **Developer settings** → **OAuth Apps** → aplikace administrace: jediná callback adresa
-  `https://www.zabavadeti.cz/api/callback`, wildcard matching vypnuté, **Expire user access tokens**
-  zapnuté. Pak tamtéž **Revoke all user tokens** (preventivně; jen se znovu přihlásíte).
+  **Applications** (**Authorized OAuth Apps**, **Authorized GitHub Apps** i **Installed GitHub
+  Apps**): znáte všechno? Přihlašovací aplikace `zabavadeti-administrace` je mezi GitHub Apps,
+  pod **Authorized OAuth Apps** už žádná aplikace administrace není.
+- **Developer settings** → **GitHub Apps** → `zabavadeti-administrace`:
+  - **General:** jediná callback adresa `https://www.zabavadeti.cz/api/callback`, wildcard
+    (permissive) matching vypnuté, **Request user authorization (OAuth) during installation**
+    a **Enable Device Flow** vypnuté, **Webhook** neaktivní.
+  - **Credentials:** jen **jeden** client secret (ten v Cloudflare) a jen **jeden** privátní klíč
+    (**Key pairs**). Neznámý secret nebo klíč = část F.
+  - **Permissions & events:** jen **Contents** (Read and write), **Pull requests** (Read and
+    write) a **Metadata** (Read-only); žádná Account ani Organization permissions, žádné **Issues**,
+    žádné události.
+  - **Optional features:** **User-to-server token expiration** aktivní (přihlášení platí 8 hodin).
+  - Pak na stránce **General** **Revoke all user tokens** (preventivně; jen se znovu přihlásíte).
+- **Settings** → **Applications** → **Installed GitHub Apps** → `zabavadeti-administrace` →
+  **Configure**: **Only select repositories** a v seznamu jen `11Lucie/zabavadeti`.
 - Cloudflare → `ALLOWED_GITHUB_USERS` (teď jen `11Lucie`) a Zero Trust → policy: jen aktuální lidé?
 - Cloudflare → Pages → **Settings**: **Build command** je pojistka z kroku B8 (nebo `node build.mjs`),
   **Preview branch** je **None**, v **Variables** jen proměnné z kroku B4 (`OAUTH_SCOPE` ani
@@ -785,11 +851,23 @@ Postupujte v tomto pořadí, nic z toho nic nerozbije:
    - **GitHub – váš účet:** **SSH and GPG keys**, **Personal access tokens** (classic i
      fine-grained), **Authorized OAuth Apps** a **Authorized GitHub Apps**: smažte, co nepoznáváte.
    - **GitHub – repozitář:** **Collaborators**, **Deploy keys**, **Webhooks**, **GitHub Apps**
-     (Cloudflare jen s „Only select repositories“), **Actions** vypnuté, ruleset **Active**,
-     v **Bypass list** jen **Repository admin**, všechna pravidla zaškrtnutá.
-   - **Přihlašovací aplikace (OAuth App):** callback jen `https://www.zabavadeti.cz/api/callback`;
-     **Revoke all user tokens** (odhlásí všechny); **Generate a new client secret**, nový vložit do
-     Cloudflare (`GITHUB_CLIENT_SECRET`), **všechny ostatní** secrety smazat → **Retry deployment**.
+     (Cloudflare a `zabavadeti-administrace`, obě jen s „Only select repositories“), **Actions**
+     vypnuté, ruleset **Active**, v **Bypass list** jen **Repository admin**, všechna pravidla
+     zaškrtnutá.
+   - **Nouzová brzda (když je potřeba administraci hned zastavit):** **Settings** →
+     **Applications** → **Installed GitHub Apps** → `zabavadeti-administrace` → **Configure** →
+     dole **Suspend**. Přihlášení do administrace pak nemůže do repozitáře nic zapsat. Po úklidu
+     to na stejném místě vrátíte (**Unsuspend**).
+   - **Přihlašovací aplikace (GitHub App):** **Developer settings** → **GitHub Apps** →
+     `zabavadeti-administrace`:
+     - **General:** callback jen `https://www.zabavadeti.cz/api/callback`; **Revoke all user
+       tokens** (odhlásí všechny).
+     - **Credentials:** **Generate a new client secret**, nový vložit do Cloudflare
+       (`GITHUB_CLIENT_SECRET`), **všechny ostatní** secrety smazat → **Retry deployment**.
+       U **Key pairs** smažte každý klíč, který nepoznáváte; při pochybnosti vygenerujte nový
+       (soubor `.pem` hned smažte, nikam neukládat) a ten starý smažte.
+     - **Permissions & events:** jen Contents, Pull requests a Metadata (krok B1, bod 3).
+     - **Installed GitHub Apps** → **Configure:** jen repozitář `11Lucie/zabavadeti`.
    - **Cloudflare:** **Members**, **API Tokens**, **Audit log** (co se kdy měnilo).
    - **Cloudflare Pages:** **Build command** (pojistka z B8), výstup `dist`, **Preview branch** = None,
      **Variables** jen ty z kroku B4 (`OAUTH_SCOPE` ani `ALLOWED_ORIGINS` tam nejsou, `CODE_HASH`
@@ -829,14 +907,19 @@ WordPress běžně doplácí (zranitelné pluginy, databáze, hádání hesel). 
 - **Váš počítač.** Zavirovaný počítač vidí útočník stejně jako vy. Přihlášení ke GitHubu uložené
   v počítači (Claude přes něj nahrává údržbu) má vaši výjimku z pravidel, takže umí zveřejnit přímo.
   Počítač chraňte (aktualizace, šifrovaný disk, zámek obrazovky, žádný sdílený účet).
-- **Oprávnění přihlášení přes GitHub je širší, než by bylo ideální.** Přihlášení do administrace
-  uloží v prohlížeči klíč (token), který umí zapisovat do všech vašich **veřejných** repozitářů,
-  ne jen do tohoto, a funguje přímo proti GitHubu, i bez Access. Díky volbě **Expire user access
-  tokens** platí nejvýš 8 hodin (obnovovací klíč přihlašovací část webu zahodí a do prohlížeče ho
-  nepošle). Odhlášení v administraci ho jen smaže z prohlížeče; zrušit ho dřív jde na GitHubu
-  (Revoke, části E a F). Proto administraci otevírejte jen na vlastním počítači a po práci se
-  odhlaste. Úzké oprávnění jen na tento repozitář by umožnila „GitHub App“ místo dnešní „OAuth App“
-  – změnu je potřeba nejdřív vyzkoušet (zeptejte se Clauda).
+- **Klíč z přihlášení do administrace.** Přihlášení uloží v prohlížeči klíč (token) a ten funguje
+  přímo proti GitHubu, i bez Access. Díky GitHub App (od 26. 11. 2026) umí zapisovat **jen do
+  repozitáře `11Lucie/zabavadeti`**: do jeho souborů (texty, fotky, ale i kód webu) a do návrhů –
+  ne nastavení repozitáře, pravidla, Actions, webhooky ani spolupracovníky a ne vaše jiné
+  repozitáře. V tomto repozitáři ale zapisovat umí. Pojistky chrání každá proti něčemu jinému:
+  Access a 2FA brání tomu, aby klíč vůbec někdo získal. Pravidla (ruleset, krok B3) zastaví klíč
+  editorky. Váš klíč má ale vaši výjimku z pravidel (stejně jako přihlášení v počítači výše), takže
+  změnu kódu jím zastaví jen pojistka kódu (`CODE_HASH`, krok B8) a změněný obsah se vrací přes
+  **Rollback to this deployment** (část F). Díky volbě **User-to-server token
+  expiration** platí klíč nejvýš 8 hodin (obnovovací klíč přihlašovací část webu zahodí a do
+  prohlížeče ho nepošle). Odhlášení v administraci ho jen smaže z prohlížeče; zrušit ho dřív jde na
+  GitHubu (Revoke, části E a F). Proto administraci otevírejte jen na vlastním počítači a po práci
+  se odhlaste.
 - **Výpadek GitHubu nebo Cloudflare.** Web pak nemusí jít upravit, výjimečně ani zobrazit. Data
   nezmizí: celý web je na GitHubu a v pravidelných zálohách (část E).
 - **Přetížení webu (DDoS)** řeší Cloudflare. U velkých útoků by se web mohl na chvíli zpomalit.

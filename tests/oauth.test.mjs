@@ -428,6 +428,45 @@ describe('/api/callback', () => {
     assert.ok(!(await res2.text()).includes(REFRESH));
   });
 
+  // GitHub App (current setup since 26. 11. 2026): the authorize URL keeps scope=public_repo
+  // (GitHub Apps ignore it), the token endpoint answers with scope "" and a user-to-server token
+  // (ghu_…) plus a refresh token. Login passes; a foreign login's token is revoked with the
+  // GitHub App's client id (DELETE /applications/{client_id}/token), same as with an OAuth App.
+  test('GitHub App: empty scope passes, foreign login revoked via /applications/{client_id}/token', async () => {
+    const env = { ...ENV, GITHUB_CLIENT_ID: 'Iv23.testappclientid' };
+    const appToken = (access_token) => ['https://github.com/login/oauth/access_token', () => json({
+      access_token, expires_in: 28800, refresh_token: 'ghr_appRefreshSECRET', refresh_token_expires_in: 15811200, token_type: 'bearer', scope: '',
+    })];
+
+    const auth = await authFn.onRequestGet(ctx(`${ORIGIN}/api/auth?provider=github&scope=repo`, { env }));
+    assert.equal(auth.status, 302);
+    const loc = new URL(auth.headers.get('location'));
+    assert.equal(loc.searchParams.get('client_id'), env.GITHUB_CLIENT_ID);
+    assert.equal(loc.searchParams.get('scope'), 'public_repo');
+
+    mockFetch([appToken('ghu_appUserToken'), userRoute('11Lucie')]);
+    const ok = await callbackFn.onRequestGet(callbackCtx({ env }));
+    assert.equal(ok.status, 200);
+    const html = await ok.text();
+    assert.ok(html.includes('ghu_appUserToken'));
+    assert.ok(!html.includes('ghr_'), 'refresh token never reaches the page');
+    assert.ok(!githubCalls().some((c) => c.url.startsWith('https://api.github.com/applications/')), 'nothing revoked');
+
+    mockFetch([
+      appToken('ghu_intruderToken'),
+      ['https://api.github.com/user', () => json({ login: 'intruder' })],
+      ['https://api.github.com/applications/', () => new Response(null, { status: 204 })],
+    ]);
+    const denied = await callbackFn.onRequestGet(callbackCtx({ env }));
+    assert.equal(denied.status, 403);
+    assert.ok(!(await denied.text()).includes('ghu_intruderToken'));
+    const revoke = githubCalls().find((c) => c.url.startsWith('https://api.github.com/applications/'));
+    assert.equal(revoke.url, `https://api.github.com/applications/${encodeURIComponent(env.GITHUB_CLIENT_ID)}/token`);
+    assert.equal(revoke.init.method, 'DELETE');
+    assert.equal(revoke.init.headers.Authorization, `Basic ${btoa(`${env.GITHUB_CLIENT_ID}:${ENV.GITHUB_CLIENT_SECRET}`)}`);
+    assert.equal(JSON.parse(revoke.init.body).access_token, 'ghu_intruderToken');
+  });
+
   test('token containing </script> is never reflected raw', async () => {
     mockFetch([tokenOk('gho_</script><b>x'), userRoute()]);
     const res = await callbackFn.onRequestGet(callbackCtx());

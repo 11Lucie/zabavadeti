@@ -10,8 +10,10 @@ backend:
   branch: main
   base_url: https://www.zabavadeti.cz
   auth_endpoint: api/auth
-  # Must match OAUTH_SCOPE of the OAuth proxy (functions/api/auth.js); the proxy ignores
+  # Must match the OAuth proxy's scope (lib/oauth.js, DEFAULT_SCOPE / OAUTH_SCOPE); the proxy ignores
   # the scope requested by the browser and always uses its own allowlisted value.
+  # Login uses a GitHub App, which ignores scopes: access is limited by the app's permissions
+  # (Contents, Pull requests) and its installation on 11Lucie/zabavadeti only.
   auth_scope: public_repo
   squash_merges: true
   cms_label_prefix: decap/

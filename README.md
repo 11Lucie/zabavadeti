@@ -36,7 +36,8 @@ Lokální server neumí Pages Functions – adresy `/api/*` (přihlášení do
 administrace přes GitHub) vrací 501. Přihlašovací funkce jde lokálně spustit
 přes `npx wrangler pages dev dist` (wrangler není závislostí projektu). Proměnné
 pro to patří jen do `.dev.vars` (je v `.gitignore`), nikdy produkční secret –
-použijte zvláštní testovací GitHub OAuth App s callbackem na localhost. Povinné je
+použijte zvláštní testovací GitHub App nebo OAuth App s callbackem na localhost (proxy
+umí obojí; GitHub App rozsah `scope` ignoruje a vrací prázdný). Povinné je
 i `ALLOWED_GITHUB_USERS`; ověření Cloudflare Access a seznam povolených adres se na
 `http://localhost` a `http://127.0.0.1` nevyžadují. Na produkci (`config.yml`,
 `base_url`) se lokálně přihlásit nejde.
@@ -201,8 +202,9 @@ Postup krok za krokem je v `NAVOD.md`, část B (projekt v Cloudflare B4, pojist
   `ALLOWED_GITHUB_USERS` (teď jen `11Lucie` – web spravuje jen admin), `ACCESS_TEAM_DOMAIN`,
   `ACCESS_AUD` – všechny povinné, bez nich přihlášení nepustí nikoho; dále
   `SKIP_DEPENDENCY_INSTALL=1` (Production i Preview) a po zapnutí pojistky `CODE_HASH`.
+  `GITHUB_CLIENT_ID` a `GITHUB_CLIENT_SECRET` patří GitHub App `zabavadeti-administrace`.
   `ALLOWED_ORIGINS` ani `OAUTH_SCOPE` se nenastavují (výchozí `https://www.zabavadeti.cz`
-  a `public_repo` jsou v `lib/oauth.js`).
+  a `public_repo` jsou v `lib/oauth.js`; GitHub App rozsah ignoruje).
 - `CODE_HASH` se počítá (po `git fetch origin`) v Git Bash stejně jako v Build command, jen nad
   číslem commitu, který Lucie zkontrolovala (`git log <stará verze>..origin/main` – jen její
   commity a schválené návrhy; postup a pořadí v NAVOD.md B8), místo `HEAD`:
@@ -216,8 +218,20 @@ Postup krok za krokem je v `NAVOD.md`, část B (projekt v Cloudflare B4, pojist
   nevytratí kvůli mezeře či jinému znaku v názvu a že NAVOD obsahuje přesně tentýž Build command.
   Mění ho každá změna mimo `content/*.json` a `static/uploads/*` (obyčejné soubory s bezpečným
   názvem), i v dokumentaci – po každé údržbě ho je potřeba v Cloudflare přepsat a dát Retry deployment.
-- GitHub OAuth App: jediná callback URL `https://www.zabavadeti.cz/api/callback`, bez wildcard
-  matchingu a Device Flow, se zapnutým „Expire user access tokens“ (token platí 8 hodin;
-  refresh token proxy zahodí, Decap ho neumí použít – po vypršení se uživatelka přihlásí znovu).
+- Přihlášení: GitHub App `zabavadeti-administrace` (od 26. 11. 2026; dřívější OAuth App je
+  smazaná), soukromá („Only on this account“), nainstalovaná jen na `11Lucie/zabavadeti`
+  („Only select repositories“). Jediná callback URL `https://www.zabavadeti.cz/api/callback`,
+  bez wildcard matchingu, Device Flow, OAuth při instalaci, Setup URL a webhooku. Repository
+  permissions jen Contents (Read and write), Pull requests (Read and write) a Metadata
+  (Read-only), žádné Account/Organization permissions, Issues ani události. Aktivní
+  „User-to-server token expiration“ (token `ghu_…` platí 8 hodin; refresh token proxy zahodí,
+  Decap ho neumí použít – po vypršení se uživatelka přihlásí znovu). Token má průnik oprávnění
+  aplikace a uživatelky a funguje jen v repozitářích s instalací. Privátní klíč (Key pairs)
+  GitHub vyžaduje před instalací, proxy ho nepoužívá; stažený `.pem` se hned maže. Postup
+  založení: NAVOD.md krok B1, client secret krok B4.
+- `lib/oauth.js` je pro GitHub App i OAuth App stejný: parametr `scope` (`public_repo`, i
+  `auth_scope` v `config.yml`) GitHub App ignoruje a v odpovědi vrací `scope: ""`, které kontrolou
+  `scopeWithinRequested` projde. Odvolání tokenu cizího účtu (`DELETE
+  /applications/{client_id}/token`) funguje stejně (hlídá `tests/oauth.test.mjs`).
 - Přesměrování `zabavadeti.cz` → `www.zabavadeti.cz` se nastavuje v Cloudflare
   (Redirect Rules), ne v tomto repozitáři.

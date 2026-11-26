@@ -237,8 +237,8 @@ přepočítat i jejich SRI v `index.html`
 - Nahrání fotky: soubor se uloží jako `.jpg` s malými písmeny a bez diakritiky.
 - Všech sedm částí (včetně Provozovatel) se otevře, pole fotky služby a popisu fotky funguje a
   „Neuloženo: …“ z pojistky (`preSave`) se ukáže při neplatném IČO nebo fotce služby bez popisu.
-- Po 8 hodinách od přihlášení (vypršení tokenu, „Expire user access tokens“) administrace hlásí
-  chybu a po odhlášení a novém přihlášení funguje.
+- Po 8 hodinách od přihlášení (vypršení tokenu, „User-to-server token expiration“ v GitHub App)
+  administrace hlásí chybu a po odhlášení a novém přihlášení funguje.
 
 # Přibalená písma: Baloo 2 a Plus Jakarta Sans
 
