@@ -96,6 +96,11 @@ Zkontrolujte, jestli máte (pokud ne, udělejte teď):
   administrace a obnova hesla ke GitHubu, Cloudflare i k doméně. Záchranný telefon a e-mail u účtu
   musí být aktuální a vaše.
 - Vše děláte pod účtem **11Lucie**, nikdy pod pracovním účtem.
+- **Skrytý e-mail v úpravách:** **Settings** → **Emails** → zaškrtnout **Keep my email addresses
+  private** (a v **Settings** → **Public profile** → **Public email** nechat „Don't show my email
+  address“). Administrace ukládá změny vaším GitHub účtem a GitHub k nim jinak připíše váš
+  **skutečný e-mail**, který pak kdokoli uvidí ve veřejné historii repozitáře. Se zaškrtnutím
+  se místo něj použije adresa `…@users.noreply.github.com`.
 
 **Proč veřejný repozitář nevadí:**
 
@@ -504,7 +509,9 @@ Teď to není potřeba. Kdyby to Ivona chtěla:
 
 1. **Ivona** si na https://github.com založí účet (vlastní e-mail, silné heslo, které nepoužívá
    jinde), **zapne 2FA** (nejlépe passkey nebo GitHub Mobile), uloží si záchranné kódy, **zapne 2FA
-   i na e-mailu** (chodí na něj PIN) a pošle Lucii své **uživatelské jméno** na GitHubu.
+   i na e-mailu** (chodí na něj PIN), zaškrtne **Settings** → **Emails** → **Keep my email
+   addresses private** (jinak by se její e-mail objevil ve veřejné historii každé její úpravy)
+   a pošle Lucii své **uživatelské jméno** na GitHubu.
    Vynutit 2FA u osobního repozitáře nejde (jen u organizací), proto si to u ní ověřte.
 2. **Lucie** v repozitáři: **Settings** → **Collaborators** → **Add people** → Ivonino jméno →
    role **Write** (Ivona přijme pozvánku z e-mailu). Díky pravidlům z kroku 3 sama nic nezveřejní.
